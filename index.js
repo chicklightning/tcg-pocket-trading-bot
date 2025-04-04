@@ -1,4 +1,4 @@
-import { Client, Collection, Events, GatewayIntentBits } from 'discord.js';
+import { Client, Collection, GatewayIntentBits } from 'discord.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'url';
@@ -11,67 +11,72 @@ const client = new Client({
 	],
 });
 
+client.cooldowns = new Collection();
+
 // Set up commands
 client.commands = new Collection();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+const foldersPath = path.join(__dirname, 'commands');
 
-// Error out if no commands are found
-if (commandFiles.length === 0) {
-	console.error(`[ERROR] No command files found in folder: ${commandsPath}`);
+// Grab all subdirectories of commands folder
+const dirents = fs.readdirSync(foldersPath, { withFileTypes: true });
+const commandFolders = dirents
+	.filter(dirent => fs.statSync(foldersPath + '/' + dirent.name).isDirectory())
+	.map(dirent => dirent.name);
+
+// Error out if no command folders are found
+if (commandFolders.length === 0) {
+	console.error(`[ERROR] No command folders found in path: ${foldersPath}.`);
 	process.exit(1);
 }
 
-for (const file of commandFiles) {
-	const filePath = 'file:///' + path.join(commandsPath, file);
-	const command = await import(filePath);
+for (const folderPath of commandFolders) {
+	const commandsPath = path.join(foldersPath, folderPath);
+	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
-	// Set a new item in the Collection with the key as the command name and the value as the exported module
-	if ('data' in command.default && 'execute' in command.default) {
-		client.commands.set(command.default.data.name, command.default);
-	}
-	else {
-		console.warn(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+	for (const file of commandFiles) {
+		const filePath = 'file:///' + path.join(commandsPath, file);
+		const command = await import(filePath);
+
+		// Set a new item in the Collection with the key as the command name and the value as the exported module
+		if ('data' in command.default && 'execute' in command.default) {
+			console.log(`[LOG] Registering command at path ${filePath}.`);
+			client.commands.set(command.default.data.name, command.default);
+		}
+		else {
+			console.warn(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+		}
 	}
 }
 
-client.on(Events.InteractionCreate, async interaction => {
-	if (!interaction.isChatInputCommand()) return;
+// Set up events and event handling
+const eventsPath = path.join(__dirname, 'events');
+const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
 
-	const command = interaction.client.commands.get(interaction.commandName);
+for (const file of eventFiles) {
+	const filePath = 'file:///' + path.join(eventsPath, file);
+	const event = await import(filePath);
 
-	if (!command) {
-		console.error(`[ERROR] No command matching ${interaction.commandName} was found.`);
-		return;
+	if (!event.default || !event.default.name || !event.default.execute) {
+		console.warn(`[WARNING] The event at ${filePath} is missing a required "name" or "execute" property.`);
+		continue;
 	}
 
-	try {
-		await command.execute(interaction);
+	if (event.default.once) {
+		client.once(event.default.name, (...args) => event.default.execute(...args));
 	}
-	catch (error) {
-		console.error(error);
-		if (interaction.replied || interaction.deferred) {
-			await interaction.followUp({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
-		}
-		else {
-			await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
-		}
+	else {
+		client.on(event.default.name, (...args) => event.default.execute(...args));
 	}
-});
+}
 
 // Ensure that the DISCORD_TOKEN environment variable is set
 if (!process.env.DISCORD_TOKEN) {
 	console.error('[ERROR] DISCORD_TOKEN environment variable is not set.');
 	process.exit(1);
 }
-
-// When the client is ready, run this code (only once).
-client.once(Events.ClientReady, readyClient => {
-	console.log(`[LOG] Ready! Logged in as ${readyClient.user.tag}`);
-});
 
 // Log in to Discord with client token
 client.login(process.env.DISCORD_TOKEN);
