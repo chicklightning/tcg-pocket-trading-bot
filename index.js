@@ -15,8 +15,10 @@ const client = new Client({
 // Create cooldowns collection to rate limit command usage
 client.cooldowns = new Collection();
 
-// Set up 
+// Connect client to database and set up card cache
 client.sequelize = db.sequelize;
+const card = require('./database/models/card.js')(sequelize, Sequelize.DataTypes);
+client.cardCache = await card.findAll();
 
 // Set up commands
 client.commands = new Collection();
