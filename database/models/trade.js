@@ -16,17 +16,12 @@ export default (sequelize, DataTypes) => {
     }
   }
   Trade.init({
-    id: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      primaryKey: true,
-    },
     desiredCardA: {
-      type: DataTypes.UUID,
+      type: DataTypes.STRING,
       allowNull: true,
     },
     desiredCardB: {
-      type: DataTypes.UUID,
+      type: DataTypes.STRING,
       allowNull: true,
     },
     isValid: {

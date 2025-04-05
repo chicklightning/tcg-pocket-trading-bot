@@ -23,7 +23,7 @@ export default (sequelize, DataTypes) => {
       primaryKey: true,
     },
     nickname: DataTypes.STRING,
-    desiredCards: DataTypes.ARRAY(DataTypes.UUID),
+    desiredCards: DataTypes.ARRAY(DataTypes.STRING),
   }, {
     sequelize,
     modelName: 'User',

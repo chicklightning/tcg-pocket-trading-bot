@@ -4,27 +4,30 @@ export async function up(queryInterface, Sequelize) {
   await queryInterface.createTable('Trades', {
     id: {
       allowNull: false,
-      autoIncrement: true,
       primaryKey: true,
-      type: Sequelize.INTEGER
-    },
-    id: {
-      type: Sequelize.STRING
+      type: Sequelize.STRING,
     },
     desiredCardA: {
-      type: Sequelize.INTEGER
+      type: Sequelize.STRING,
+      allowNull: true,
     },
     desiredCardB: {
-      type: Sequelize.INTEGER
+      type: Sequelize.STRING,
+      allowNull: true,
     },
     isValid: {
-      type: Sequelize.BOOLEAN
+      type: Sequelize.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
     },
     isComplete: {
-      type: Sequelize.BOOLEAN
+      type: Sequelize.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
     },
     owner: {
-      type: Sequelize.STRING
+      type: Sequelize.STRING,
+      allowNull: false,
     },
     createdAt: {
       allowNull: false,
