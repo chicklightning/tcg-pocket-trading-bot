@@ -5,6 +5,8 @@ import { fileURLToPath } from 'url';
 import 'dotenv/config';
 
 const commands = [];
+
+// TODO: Would like to deduplicate this code
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const commandsPath = path.join(__dirname, 'slash-commands');

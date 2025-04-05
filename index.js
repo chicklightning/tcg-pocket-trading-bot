@@ -2,6 +2,7 @@ import { Client, Collection, GatewayIntentBits } from 'discord.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'url';
+import db from './database/models/index.js';
 
 // Create a new client instance
 const client = new Client({
@@ -11,11 +12,16 @@ const client = new Client({
 	],
 });
 
+// Create cooldowns collection to rate limit command usage
 client.cooldowns = new Collection();
+
+// Set up 
+client.sequelize = db.sequelize;
 
 // Set up commands
 client.commands = new Collection();
 
+// TODO: Would like to deduplicate this code
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const foldersPath = path.join(__dirname, 'commands');
