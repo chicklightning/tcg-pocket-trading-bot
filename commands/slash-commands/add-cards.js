@@ -1,5 +1,6 @@
 import { MessageFlags, SlashCommandBuilder } from 'discord.js';
-import utilities from '../command-utilities.js';
+import { Rarities, Sets } from '../command-utilities.js';
+import { Models, getModel, getUser } from '../../database/database-utilities.js';
 
 const command = {
 	data: new SlashCommandBuilder()
@@ -61,13 +62,13 @@ const command = {
 		await interaction.respond(
 			filtered.map(
 				choice => ({
-						name: `${choice.name} from ${utilities.sets[choice.packSet]} ${utilities.rarities[choice.rarity - 1]}`,
+						name: `${choice.name} from ${Sets[choice.packSet]} ${Rarities[choice.rarity - 1]}`,
 						value: choice.id 
 					})),
 		);
 	},
 	async execute(interaction) {
-		let currentUser = await utilities.getUser(interaction.client, interaction.user.id, interaction.user.username);
+		let currentUser = await getUser(interaction.client, interaction.user.id, interaction.user.username);
 
 		const cardIds = [
 			interaction.options.getString('first-card'),
@@ -88,7 +89,7 @@ const command = {
 			return interaction.reply({ content: 'You must specify at least one card to add to your desired cards list.', ephemeral: true });
 		}
 
-		const cards = utilities.getModel(interaction.client.db, 'Card');
+		const cards = getModel(interaction.client.db, Models.Card);
 		let addedCardCount = 0, notAddedCount = 0;
 		const addCardPromises = cardIds.map(async cardId => {
 			const card = await cards.findByPk(cardId);

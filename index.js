@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'url';
 import db from './database/models/index.js';
+import { Models, getModel } from './database/database-utilities.js';
 
 // Create a new client instance
 const client = new Client({
@@ -17,7 +18,7 @@ client.cooldowns = new Collection();
 
 // Connect client to database and set up card cache
 client.db = db;
-client.cardCache = await db['Card'].findAll();
+client.cardCache = await getModel(client.db, Models.Card).findAll();
 
 // Set up commands
 client.commands = new Collection();
