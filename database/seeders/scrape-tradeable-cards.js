@@ -51,9 +51,9 @@ async function updateCards(scrapedResults) {
                 packSet: result.packSet,
                 rarity: result.rarity
             });
-            console.log(`[LOG] Added new card: ${result.cardName} from ${result.packSet}, rarity ${result.rarity})`);
+            console.log(`[LOG] Added new card: ${result.cardName} from ${result.packSet}, rarity ${result.rarity}`);
         } else {
-            console.log(`[LOG] Card already exists in database: ${result.cardName} from ${result.packSet}, rarity ${result.rarity})`);
+            console.log(`[LOG] Card already exists in database: ${result.cardName} from ${result.packSet}, rarity ${result.rarity}`);
         }
     }
 };
