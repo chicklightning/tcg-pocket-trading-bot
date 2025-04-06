@@ -29,5 +29,5 @@ export default (sequelize, DataTypes) => {
     sequelize,
     modelName: 'UserCard',
   });
-  return Card;
+  return UserCard;
 };

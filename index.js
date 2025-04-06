@@ -3,7 +3,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'url';
 import db from './database/models/index.js';
-import card from './database/models/card.js';
 
 // Create a new client instance
 const client = new Client({
@@ -17,10 +16,8 @@ const client = new Client({
 client.cooldowns = new Collection();
 
 // Connect client to database and set up card cache
-client.sequelize = db.sequelize;
-client.Sequelize = db.Sequelize;
-const cards = card(db.sequelize, db.Sequelize.DataTypes);
-client.cardCache = await cards.findAll();
+client.db = db;
+client.cardCache = await db['Card'].findAll();
 
 // Set up commands
 client.commands = new Collection();

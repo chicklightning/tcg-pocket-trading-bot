@@ -19,22 +19,29 @@ else {
 }
 
 const __dirname = path.dirname(__filename);
-fs.readdirSync(__dirname)
-  .filter(file => {
-    return (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.js');
-  })
-  .forEach(file => {
-    const model = sequelize.define(path.join(__dirname, file));
+const initializeModels = async () => {
+  const modelFiles = fs
+    .readdirSync(__dirname)
+    .filter(file => file.indexOf('.') !== 0 && file !== basename && file.slice(-3) === '.js');
+
+  const modelPromises = modelFiles.map(async file => {
+    const model = (await import('file:///' + path.join(__dirname, file))).default(sequelize, Sequelize.DataTypes);
     db[model.name] = model;
   });
 
-Object.keys(db).forEach(modelName => {
-  if (db[modelName].associate) {
-    db[modelName].associate(db);
-  }
-});
+  await Promise.all(modelPromises);
 
-db.sequelize = sequelize;
-db.Sequelize = Sequelize;
+  Object.keys(db).forEach(modelName => {
+    if (db[modelName].associate) {
+      db[modelName].associate(db);
+    }
+  });
 
-export default db;
+  db.sequelize = sequelize;
+  db.Sequelize = Sequelize;
+
+  console.log(`[LOG] Successfully initialized models for environment: ${env}`);
+  return db;
+};
+
+export default await initializeModels();
