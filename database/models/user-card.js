@@ -13,13 +13,18 @@ export default (sequelize, DataTypes) => {
   }
   UserCard.init({
     user_id: {
-      type: Sequelize.STRING,
+      type: DataTypes.STRING,
       allowNull: false,
     },
     card_id: {
-      type: Sequelize.STRING,
+      type: DataTypes.STRING,
       allowNull: false,
     },
+    card_count: {
+      type: DataTypes.INTEGER,
+      defaultValue: 1,
+      allowNull: false,
+    }
   }, {
     sequelize,
     modelName: 'UserCard',

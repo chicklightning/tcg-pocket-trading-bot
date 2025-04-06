@@ -10,7 +10,7 @@ export default (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Card.belongsToMany(models.User, {
-        through: 'UserCards',
+        through: 'UserCard',
         foreignKey: 'card_id',
         otherKey: 'user_id',
       });

@@ -15,7 +15,7 @@ export default (sequelize, DataTypes) => {
       });
 
       User.belongsToMany(models.Card, {
-        through: 'UserCards',
+        through: 'UserCard',
         as: 'desiredCards',
         foreignKey: 'user_id',
         otherKey: 'card_id',

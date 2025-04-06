@@ -24,6 +24,11 @@ export async function up(queryInterface, Sequelize) {
       },
       allowNull: false,
     },
+    card_count: {
+      type: Sequelize.INTEGER,
+      defaultValue: 1,
+      allowNull: false,
+    },
     createdAt: {
       allowNull: false,
       type: Sequelize.DATE,
