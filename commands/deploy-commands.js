@@ -37,15 +37,13 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 // and deploy your commands!
 (async () => {
 	try {
-		console.log(`[LOG] Started refreshing ${commands.length} application (/) commands.`);
-
 		// The put method is used to fully refresh all commands with the current set
 		const data = await rest.put(
 			Routes.applicationCommands(process.env.CLIENT_ID),
 			{ body: commands },
 		);
 
-		console.log(`[LOG] Successfully reloaded ${data.length} application (/) commands.`);
+		console.log(`[LOG] Successfully reloaded ${data.length} application (/) command${data.length === 1 ? '' : 's'}.`);
 	}
 	catch (error) {
 		console.error(error);
