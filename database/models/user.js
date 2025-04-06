@@ -11,8 +11,14 @@ export default (sequelize, DataTypes) => {
       // define association here
       User.hasMany(models.Trade, {
         foreignKey: 'owner',
-        as: 'trades',
         onDelete: 'CASCADE',
+      });
+
+      User.belongsToMany(models.Card, {
+        through: 'UserCards',
+        as: 'desiredCards',
+        foreignKey: 'user_id',
+        otherKey: 'card_id',
       });
     }
   }
@@ -23,7 +29,6 @@ export default (sequelize, DataTypes) => {
       primaryKey: true,
     },
     nickname: DataTypes.STRING,
-    desiredCards: DataTypes.ARRAY(DataTypes.STRING),
   }, {
     sequelize,
     modelName: 'User',

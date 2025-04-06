@@ -9,9 +9,20 @@ export default (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Card.belongsToMany(models.User, {
+        through: 'UserCards',
+        foreignKey: 'card_id',
+        otherKey: 'user_id',
+      });
     }
   }
   Card.init({
+    id: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      primaryKey: true,
+      unique: true,
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -23,7 +34,7 @@ export default (sequelize, DataTypes) => {
         isUrl: true,
       }
     },
-    set: {
+    packSet: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {

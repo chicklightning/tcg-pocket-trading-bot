@@ -28,6 +28,10 @@ export async function up(queryInterface, Sequelize) {
     owner: {
       type: Sequelize.STRING,
       allowNull: false,
+      references: {
+        model: 'Users',
+        key: 'id',
+      },
     },
     createdAt: {
       allowNull: false,

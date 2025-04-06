@@ -10,12 +10,17 @@ export default (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Trade.belongsTo(models.User, {
-        foreignKey: 'owner',
-        as: 'initiator',
+        foreignKey: 'owner'
       });
     }
   }
   Trade.init({
+    id: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      primaryKey: true,
+      unique: true,
+    },
     desiredCardA: {
       type: DataTypes.STRING,
       allowNull: true,

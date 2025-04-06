@@ -1,39 +1,40 @@
 /** @type {import('sequelize-cli').Migration} */
 
 export async function up(queryInterface, Sequelize) {
-  await queryInterface.createTable('Cards', {
+  await queryInterface.createTable('UserCards', {
     id: {
-      allowNull: false,
-      primaryKey: true,
-      type: Sequelize.STRING
-    },
-    name: {
-      type: Sequelize.STRING,
-      allowNull: false,
-    },
-    image: {
-      type: Sequelize.STRING,
-      allowNull: false,
-    },
-    packSet: {
-      type: Sequelize.STRING,
-      allowNull: false,
-    },
-    rarity: {
       type: Sequelize.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+      allowNull: false,
+    },
+    user_id: {
+      type: Sequelize.STRING,
+      references: {
+        model: 'Users',
+        key: 'id',
+      },
+      allowNull: false,
+    },
+    card_id: {
+      type: Sequelize.STRING,
+      references: {
+        model: 'Cards',
+        key: 'id',
+      },
       allowNull: false,
     },
     createdAt: {
       allowNull: false,
-      type: Sequelize.DATE
+      type: Sequelize.DATE,
     },
     updatedAt: {
       allowNull: false,
-      type: Sequelize.DATE
-    }
+      type: Sequelize.DATE,
+    },
   });
 };
 
 export async function down(queryInterface, Sequelize) {
-  await queryInterface.dropTable('Cards');
+  await queryInterface.dropTable('UserCards')
 };

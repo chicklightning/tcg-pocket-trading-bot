@@ -10,9 +10,6 @@ export async function up(queryInterface, Sequelize) {
     nickname: {
       type: Sequelize.STRING
     },
-    desiredCards: {
-      type: Sequelize.ARRAY(Sequelize.STRING)
-    },
     createdAt: {
       allowNull: false,
       type: Sequelize.DATE

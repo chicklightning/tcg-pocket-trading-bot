@@ -10,15 +10,15 @@ async function scrapeSite(url) {
 	$('div.card-page-main').each((i, elem) => {
 		const imgSrc = $(elem).find('img.card').attr('src');
 		const cardName = $(elem).find('span.card-text-name').text();
-        let set = $(elem).find('div.prints-current-details span:first-of-type').text();
-        set = set.substring(0, set.indexOf("(")).trim();
+        let packSet = $(elem).find('div.prints-current-details span:first-of-type').text();
+        packSet = packSet.substring(0, packSet.indexOf("(")).trim();
         let rarity = $(elem).find('div.prints-current-details span:nth-of-type(2)').text().split('◊').length - 1;
         // TODO: Should rewrite at some point when allowed tradeable rarities change
         rarity = (rarity === 0) ? 5 : rarity;
 
-        const id = `${cardName} ${set} ${rarity}`;
+        const id = `${cardName} ${packSet} ${rarity}`;
 
-		results.push({ id, cardName, set, rarity, imgSrc });
+		results.push({ id, cardName, packSet, rarity, imgSrc });
 	});
 
     return results;
@@ -30,7 +30,7 @@ async function updateCards(scrapedResults) {
     // Delete all entries in table first, start clean
     cards.destroy({
         where: {},
-        truncate: true,
+        truncate: { cascade: true },
       });
     
     for (const result of scrapedResults) {
@@ -38,7 +38,7 @@ async function updateCards(scrapedResults) {
             where: {
                 id: result.id,
                 name: result.cardName,
-                set: result.set,
+                packSet: result.packSet,
                 rarity: result.rarity
             }
         });
@@ -48,12 +48,12 @@ async function updateCards(scrapedResults) {
                 id: result.id,
                 name: result.cardName,
                 image: result.imgSrc,
-                set: result.set,
+                packSet: result.packSet,
                 rarity: result.rarity
             });
-            console.log(`[LOG] Added new card: ${result.cardName} from ${result.set}, rarity ${result.rarity})`);
+            console.log(`[LOG] Added new card: ${result.cardName} from ${result.packSet}, rarity ${result.rarity})`);
         } else {
-            console.log(`[LOG] Card already exists in database: ${result.cardName} from ${result.set}, rarity ${result.rarity})`);
+            console.log(`[LOG] Card already exists in database: ${result.cardName} from ${result.packSet}, rarity ${result.rarity})`);
         }
     }
 };

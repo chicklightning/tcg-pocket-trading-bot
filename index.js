@@ -18,6 +18,7 @@ client.cooldowns = new Collection();
 
 // Connect client to database and set up card cache
 client.sequelize = db.sequelize;
+client.Sequelize = db.Sequelize;
 const cards = card(db.sequelize, db.Sequelize.DataTypes);
 client.cardCache = await cards.findAll();
 
