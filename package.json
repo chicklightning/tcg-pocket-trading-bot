@@ -19,7 +19,7 @@
     "pokemon",
     "javascript"
   ],
-  "author": "Gabrielle Sweet",
+  "author": "Gabrielle",
   "license": "SEE LICENSE IN LICENSE",
   "bugs": {
     "url": "https://github.com/chicklightning/tcg-pocket-trading-bot/issues"
@@ -31,7 +31,6 @@
     "discord.js": "^14.18.0",
     "dotenv": "^16.4.7",
     "pg": "^8.14.1",
-    "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.7",
     "sequelize-cli": "^6.6.2"
   },
