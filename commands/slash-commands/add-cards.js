@@ -1,4 +1,4 @@
-import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
+import { EmbedBuilder, InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { Rarities, Sets } from '../command-utilities.js';
 import { Models, getModel, getUser } from '../../database/database-utilities.js';
 
@@ -90,32 +90,57 @@ const command = {
 			return interaction.reply({ content: 'You must specify at least one card to add to your desired cards list.', ephemeral: true });
 		}
 
+		const cardIdsWithCount = Array.from(new Set(cardIds)).map(a =>
+			({ name: a, count: cardIds.filter(f => f === a).length }));
+
+		const embed = new EmbedBuilder()
+			.setColor(0xFF0000)
+			.setTitle(`Cards Added by ${currentUser.nickname}`)
+			.setAuthor({
+				name: 'Pokémon TCG Pocket Trader',
+				iconURL: 'https://github.com/chicklightning/tcg-pocket-trading-bot/blob/main/assets/icon.png?raw=true',
+				url: 'https://github.com/chicklightning/tcg-pocket-trading-bot',
+			})
+			.setTimestamp();
+
 		const cards = getModel(interaction.client.db, Models.Card);
-		let addedCardCount = 0, notAddedCount = 0;
-		const addCardPromises = cardIds.map(async cardId => {
+		let descriptionString = '';
+		const addCardPromises = cardIdsWithCount.map(async ({ name: cardId, count: countToAdd }) => {
 			const card = await cards.findByPk(cardId);
 			if (card) {
 				// Check if the card already exists in the user's desiredCards
-				const existingCard = await currentUser.getDesiredCards({
+				const existingCards = await currentUser.getDesiredCards({
 					where: { id: card.id },
 				});
 		
-				if (existingCard.length > 0) {
-					// If the card exists, increment the count
-					const userCard = existingCard[0];
-					userCard.UserCard.card_count += 1;
+				if (existingCards.length > 0) {
+					const userCard = existingCards[0];
+					userCard.UserCard.card_count += countToAdd;
 					await userCard.UserCard.save();
-					addedCardCount++;
 					console.log(`[LOG] Incremented count for card ${card.id} in user ${currentUser.nickname} (${currentUser.id}).`);
 				}
 				else {
 					// If the card doesn't exist, add it to the desiredCards
 					await currentUser.addDesiredCard(card);
-					addedCardCount++;
+					const newUserCard = await currentUser.getDesiredCards({
+						where: { id: card.id },
+					});
+
+					if (!newUserCard || newUserCard.length === 0) {
+						descriptionString += `- Issue adding [${card.name}](${card.image}) ${totalCount} ${Rarities[card.rarity - 1]} from ${card.packSet}, internal error\n`;
+						console.error(`[ERROR] Something went wrong - ${card.id} not added to ${currentUser.nickname} (${currentUser.id}) despite being in desired cards list.`);
+						return;
+					}
+					userCard.UserCard.card_count += countToAdd - 1; // since we already added 1 above
+					await newUserCard[0].UserCard.save();
 					console.log(`[LOG] Successfully added card ${card.id} to user ${currentUser.nickname} (${currentUser.id}).`);
 				}
-			} else {
-				notAddedCount++;
+
+				const totalCount = countToAdd > 1 ? 'x' + countToAdd : '';
+				descriptionString += `- Added [${card.name}](${card.image}) ${totalCount} ${Rarities[card.rarity - 1]} from ${card.packSet}\n`;
+			}
+			else {
+				descriptionString += `- Issue adding ${cardId}, no such card exists\n`;
 			}
 		});
 		
@@ -123,15 +148,9 @@ const command = {
 		await Promise.all(addCardPromises);
 
 		currentUser.save();
-		let replyStatement = (addedCardCount > 0) ?
-			`Successfully added ${addedCardCount} card${addedCardCount === 1 ? '' : 's'} to your desired cards list!` :
-			'Sorry, no cards were added.';
-		replyStatement = (notAddedCount > 0)
-			? `${replyStatement} Something went wrong adding ${notAddedCount} card${notAddedCount === 1 ? '' : 's'}.`
-			: replyStatement;
-
+		embed.setDescription(descriptionString);
 		return interaction.reply({
-			content: replyStatement,
+			embeds: [ embed ],
 			flags: MessageFlags.Ephemeral,
 		});
 	},

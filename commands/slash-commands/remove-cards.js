@@ -1,4 +1,4 @@
-import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
+import { EmbedBuilder, InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { Rarities, Sets } from '../command-utilities.js';
 import { Models, getModel, getUser } from '../../database/database-utilities.js';
 
@@ -90,61 +90,72 @@ const command = {
 			return interaction.reply({ content: 'You must specify at least one card to remove from your desired cards list.', ephemeral: true });
 		}
 
+        const cardIdsWithCount = Array.from(new Set(cardIds)).map(a =>
+            ({ name: a, count: cardIds.filter(f => f === a).length }));
+
+        const embed = new EmbedBuilder()
+            .setColor(0xFF0000)
+            .setTitle(`Cards Removed by ${currentUser.nickname}`)
+            .setAuthor({
+                name: 'Pokémon TCG Pocket Trader',
+                iconURL: 'https://github.com/chicklightning/tcg-pocket-trading-bot/blob/main/assets/icon.png?raw=true',
+                url: 'https://github.com/chicklightning/tcg-pocket-trading-bot',
+            })
+            .setTimestamp();
+
 		const cards = getModel(interaction.client.db, Models.Card);
-		let removedCardCount = 0, notRemovedCount = 0;
-		const removeCardPromises = cardIds.map(async cardId => {
+        let descriptionString = '';
+
+		const removeCardPromises = cardIdsWithCount.map(async ({ name: cardId, count: countToRemove }) => {
 			const card = await cards.findByPk(cardId);
 			if (card) {
-				// Check if the card already exists in the user's desiredCards
-				const existingCard = await currentUser.getDesiredCards({
-					where: { id: card.id },
-				});
+				const existingCards = await currentUser.getDesiredCards({
+                    where: { id: card.id },
+                });
 		
-				if (existingCard.length > 0) {
+				if (existingCards.length > 0) {
 					// If the card exists and count is above 0, decrement the count
-					const userCard = existingCard[0];
+					const userCard = existingCards[0];
+
 					if (userCard.UserCard.card_count > 0) {
-                        userCard.UserCard.card_count -= 1;
+                        userCard.UserCard.card_count -= countToRemove;
         
-                        if (userCard.UserCard.card_count === 0) {
-                            // Remove the UserCard record if the count becomes 0
+                        const totalCount = countToRemove > 1 ? 'x' + countToRemove : '';
+                        descriptionString += `- Removed [${card.name}](${card.image}) ${totalCount} ${Rarities[card.rarity - 1]} from ${card.packSet}\n`;
+                        if (userCard.UserCard.card_count <= 0) {
+                            // Remove the UserCard record if the count becomes 0 or less
                             await userCard.UserCard.destroy();
                             console.log(`[LOG] Removed card ${card.id} from user ${currentUser.nickname} (${currentUser.id}) as count reached 0.`);
-                        } else {
+                        }
+                        else {
                             // Otherwise, save the updated count
                             await userCard.UserCard.save();
                             console.log(`[LOG] Decremented count for card ${card.id} in user ${currentUser.nickname} (${currentUser.id}).`);
                         }
-        
-                        removedCardCount++;
                     }
                     else {
-                        notRemovedCount++;
+                        descriptionString += `- Issue removing [${card.name}](${card.image}) ${Rarities[card.rarity - 1]} from ${card.packSet}, internal error\n`;
                     }
 				}
 				else {
-					notRemovedCount++;
+                    descriptionString += `- Issue removing [${card.name}](${card.image}) ${Rarities[card.rarity - 1]} from ${card.packSet}, card not in your list\n`;
                     // Log kept here for debugging but this is expected behavior, users may attempt to remove cards they've never added
                     // console.error(`[ERROR] Card ${card.id} not found in desired cards list for user ${currentUser.nickname} (${currentUser.id}).`);
 				}
-			} else {
-				notRemovedCount++;
+			}
+            else {
+                descriptionString += `- Issue removing ${cardId}, couldn't find card\n`;
 			}
 		});
 		
 		// Wait for all card removals to complete
 		await Promise.all(removeCardPromises);
 
+        embed.setDescription(descriptionString);
 		currentUser.save();
-		let replyStatement = (removedCardCount > 0) ?
-			`Successfully removed ${removedCardCount} card${removedCardCount === 1 ? '' : 's'} from your desired cards list!` :
-			'Sorry, no cards were removed.';
-		replyStatement = (notRemovedCount > 0)
-			? `${replyStatement} Something went wrong removing ${notRemovedCount} card${notRemovedCount === 1 ? '' : 's'}.`
-			: replyStatement;
 
 		return interaction.reply({
-			content: replyStatement,
+			embeds: [ embed ],
 			flags: MessageFlags.Ephemeral,
 		});
 	},

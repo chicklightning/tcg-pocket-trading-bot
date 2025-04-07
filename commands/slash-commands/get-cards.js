@@ -44,40 +44,42 @@ const command = {
             .setTimestamp();
 
         let descriptionString = '';
-        const getCardPromises = currentUser.desiredCards.map(async card => {
-            const existingCard = await currentUser.getDesiredCards({
-                where: {
-                    id: card.id ,
-                    ...(rarityFilter > 0 && { rarity: rarityFilter }), // Filter by rarity if specified
-                    ...(setFilter !== '' && { packSet: setFilter }),   // Filter by set if specified
-                },
-            });
-
-            if (existingCard.length > 0) {
-                const userCard = existingCard[0];
-                if (userCard.UserCard.card_count === 0) {
-                    return; // Skip if card count is 0, shouldn't happen though
+        if (currentUser.desiredCards && currentUser.desiredCards.length > 0) {
+            const getCardPromises = currentUser.desiredCards.map(async card => {
+                const existingCard = await currentUser.getDesiredCards({
+                    where: {
+                        id: card.id ,
+                        ...(rarityFilter > 0 && { rarity: rarityFilter }), // Filter by rarity if specified
+                        ...(setFilter !== '' && { packSet: setFilter }),   // Filter by set if specified
+                    },
+                });
+    
+                if (existingCard.length > 0) {
+                    const userCard = existingCard[0];
+                    if (userCard.UserCard.card_count === 0) {
+                        return; // Skip if card count is 0, shouldn't happen though
+                    }
+                    const totalCount = userCard.UserCard.card_count > 1 ? 'x' + userCard.UserCard.card_count : '';
+                    descriptionString += `- [${card.name}](${card.image}) ${totalCount} ${Rarities[card.rarity - 1]} from ${card.packSet}\n`;
                 }
-                const totalCount = userCard.UserCard.card_count > 1 ? 'x' + userCard.UserCard.card_count : '';
-                descriptionString += `- [${card.name}](${card.image}) ${totalCount} ${Rarities[card.rarity - 1]} from ${card.packSet}\n`;
-            }
-            else {
-                console.error(`[ERROR] Something went wrong - ${card.id} not mapped to ${currentUser.nickname} (${currentUser.id}) despite being in desired cards list.`);
-            }
-        });
-
-        // Wait for all card fetches to complete
-		await Promise.all(getCardPromises);
+                else {
+                    console.error(`[ERROR] Something went wrong - ${card.id} not mapped to ${currentUser.nickname} (${currentUser.id}) despite being in desired cards list.`);
+                }
+            });
+    
+            // Wait for all card fetches to complete
+            await Promise.all(getCardPromises);
+        }
 
         if (descriptionString.length === 0) {
-            embed.setDescription("You currently have no cards in your desired list.");
+            embed.setDescription('You currently have no cards in your desired list.');
         }
         else {
             embed.setDescription(descriptionString);
         }
 
         return interaction.reply({
-            embeds: [embed],
+            embeds: [ embed ],
         });
 	},
 	cooldown: 2,
