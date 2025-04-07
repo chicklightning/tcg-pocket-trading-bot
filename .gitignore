@@ -54,8 +54,6 @@ web_modules/
 # Optional eslint cache
 .eslintcache
 
-.sequelizerc
-
 # Optional stylelint cache
 .stylelintcache
 
