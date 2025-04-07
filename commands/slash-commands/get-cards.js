@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { InteractionContextType, SlashCommandBuilder } from 'discord.js';
 import { Rarities, Sets } from '../command-utilities.js';
 import { getUser } from '../../database/database-utilities.js';
 
@@ -6,6 +6,7 @@ const command = {
 	data: new SlashCommandBuilder()
 		.setName('get-cards')
 		.setDescription('Get the list of cards you want others to trade to you.')
+        .setContexts(InteractionContextType.Guild, InteractionContextType.BotDM)
         .addBooleanOption(option =>
             option.setName('show-images')
                 .setDescription('Whether card images should be included in the response.')),

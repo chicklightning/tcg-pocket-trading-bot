@@ -1,4 +1,4 @@
-import { MessageFlags, SlashCommandBuilder } from 'discord.js';
+import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { Rarities, Sets } from '../command-utilities.js';
 import { Models, getModel, getUser } from '../../database/database-utilities.js';
 
@@ -6,6 +6,7 @@ const command = {
 	data: new SlashCommandBuilder()
 		.setName('remove-cards')
 		.setDescription('Remove one or more cards from the list of cards you want others to trade to you.')
+        .setContexts(InteractionContextType.Guild, InteractionContextType.BotDM)
 		.addStringOption(option =>
 			option.setName('first-card')
 				.setDescription('Name of the card you want to remove from your list of desired cards.')
@@ -100,9 +101,9 @@ const command = {
 				});
 		
 				if (existingCard.length > 0) {
-					// If the card exists, decrement the count
+					// If the card exists and count is above 0, decrement the count
 					const userCard = existingCard[0];
-					if (userCard.UserCard.card_count > 1) {
+					if (userCard.UserCard.card_count > 0) {
                         userCard.UserCard.card_count -= 1;
                         removedCardCount++;
                         await userCard.UserCard.save();

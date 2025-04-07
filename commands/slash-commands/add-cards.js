@@ -1,4 +1,4 @@
-import { MessageFlags, SlashCommandBuilder } from 'discord.js';
+import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { Rarities, Sets } from '../command-utilities.js';
 import { Models, getModel, getUser } from '../../database/database-utilities.js';
 
@@ -6,6 +6,7 @@ const command = {
 	data: new SlashCommandBuilder()
 		.setName('add-cards')
 		.setDescription('Add one or more cards to the list of cards you want others to trade to you.')
+		.setContexts(InteractionContextType.Guild, InteractionContextType.BotDM)
 		.addStringOption(option =>
 			option.setName('first-card')
 				.setDescription('Name of the card you want to add to your list of desired cards.')
