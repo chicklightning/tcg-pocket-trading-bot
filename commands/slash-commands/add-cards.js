@@ -58,8 +58,11 @@ const command = {
 				.setAutocomplete(true)
 				.setRequired(false)),
 	async autocomplete(interaction) {
-		const focusedValue = interaction.options.getFocused();
-		const filtered = interaction.client.cardCache.filter(choice => choice.id.startsWith(focusedValue)).slice(0, 25);
+		// TODO: Make an autocomplete utility function that filters the card cache based on the user's input
+		const focusedValue = interaction.options.getFocused().toLowerCase();
+		const filtered = interaction.client.cardCache
+			.filter(choice => choice.id.toLowerCase().startsWith(focusedValue))
+			.slice(0, 25); // Limit results to 25
 		await interaction.respond(
 			filtered.map(
 				choice => ({
