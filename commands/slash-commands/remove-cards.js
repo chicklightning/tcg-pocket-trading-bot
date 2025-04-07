@@ -105,9 +105,18 @@ const command = {
 					const userCard = existingCard[0];
 					if (userCard.UserCard.card_count > 0) {
                         userCard.UserCard.card_count -= 1;
+        
+                        if (userCard.UserCard.card_count === 0) {
+                            // Remove the UserCard record if the count becomes 0
+                            await userCard.UserCard.destroy();
+                            console.log(`[LOG] Removed card ${card.id} from user ${currentUser.nickname} (${currentUser.id}) as count reached 0.`);
+                        } else {
+                            // Otherwise, save the updated count
+                            await userCard.UserCard.save();
+                            console.log(`[LOG] Decremented count for card ${card.id} in user ${currentUser.nickname} (${currentUser.id}).`);
+                        }
+        
                         removedCardCount++;
-                        await userCard.UserCard.save();
-                        console.log(`[LOG] Decremented count for card ${card.id} in user ${currentUser.nickname} (${currentUser.id}).`);
                     }
                     else {
                         notRemovedCount++;
