@@ -1,5 +1,5 @@
 import { EmbedBuilder, InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
-import { Rarities, Sets } from '../command-utilities.js';
+import { BaseEmbed, Rarities, Sets } from '../command-utilities.js';
 import { Models, getModel, getUser } from '../../database/database-utilities.js';
 
 const command = {
@@ -97,15 +97,7 @@ const command = {
 			({ name: a, count: cardIds.filter(f => f === a).length }));
 
 		// TODO: Make a utility for a base embed builder
-		const embed = new EmbedBuilder()
-			.setColor(0xFF0000)
-			.setTitle(`Cards Added by ${currentUser.nickname}`)
-			.setAuthor({
-				name: 'Pokémon TCG Pocket Trader',
-				iconURL: 'https://github.com/chicklightning/tcg-pocket-trading-bot/blob/main/assets/icon.png?raw=true',
-				url: 'https://github.com/chicklightning/tcg-pocket-trading-bot/wiki/User-manual',
-			})
-			.setTimestamp();
+		const embed = BaseEmbed.setTitle(`Cards Added by ${currentUser.nickname}`);
 
 		const cards = getModel(interaction.client.db, Models.Card);
 		let descriptionString = '';
