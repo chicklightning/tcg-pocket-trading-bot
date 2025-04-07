@@ -1,5 +1,6 @@
 # tcg-pocket-trading-bot
 ### A Discord bot to facilitate trading in Pokémon TCG Pocket.
+To learn how to set up your own copy of the bot or to see how the commands work, visit the [wiki](https://github.com/chicklightning/tcg-pocket-trading-bot/wiki).
 
 ---
 
