@@ -134,7 +134,7 @@ const command = {
 						console.error(`[ERROR] Something went wrong - ${card.id} not added to ${currentUser.nickname} (${currentUser.id}) despite being in desired cards list.`);
 						return;
 					}
-					userCard.UserCard.card_count += countToAdd - 1; // since we already added 1 above
+					newUserCard[0].UserCard.card_count += countToAdd - 1; // New usercards are initiated with count 1
 					await newUserCard[0].UserCard.save();
 					console.log(`[LOG] Successfully added card ${card.id} to user ${currentUser.nickname} (${currentUser.id}).`);
 				}
