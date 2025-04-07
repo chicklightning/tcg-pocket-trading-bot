@@ -96,13 +96,14 @@ const command = {
         const cardIdsWithCount = Array.from(new Set(cardIds)).map(a =>
             ({ name: a, count: cardIds.filter(f => f === a).length }));
 
+        // TODO: Make a utility for a base embed builder
         const embed = new EmbedBuilder()
             .setColor(0xFF0000)
             .setTitle(`Cards Removed by ${currentUser.nickname}`)
             .setAuthor({
                 name: 'Pokémon TCG Pocket Trader',
                 iconURL: 'https://github.com/chicklightning/tcg-pocket-trading-bot/blob/main/assets/icon.png?raw=true',
-                url: 'https://github.com/chicklightning/tcg-pocket-trading-bot',
+                url: 'https://github.com/chicklightning/tcg-pocket-trading-bot/wiki/User-manual',
             })
             .setTimestamp();
 
