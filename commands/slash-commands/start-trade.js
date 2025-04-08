@@ -12,10 +12,35 @@ const command = {
                 .setDescription('The user you want to trade with.')
                 .setRequired(true)),
 	async execute(interaction) {
-		const userOption = interaction.options.getUser('target');
-		const targetUser = await getUser(interaction.client, userOption?.id ?? interaction.user.id, userOption?.username ?? interaction.user.username);
+		const targetUser = interaction.options.getUser('target');
 
-		
+        // Check if there is an ongoing trade between the two users
+        const trades = getModel(interaction.client.db, Models.Trade);
+        const existingTrade = await trades.findOne({
+            where: {
+                isComplete: false,
+                [Op.or]: [
+                    { owner: interaction.user.id, target: targetUser.id },
+                    { owner: targetUser.id, target: interaction.user.id },
+                ],
+            },
+        });
+
+        if (existingTrade) {
+            return interaction.reply({
+                content: `There is already an ongoing trade between you and ${targetUser.username}. Complete this trade before starting a new one.`,
+                flags: MessageFlags.Ephemeral,
+            });
+        }
+
+        // Create a new trade
+        await trades.create({
+            owner: interaction.user.id,
+            target: targetUser.id,
+        });
+
+        const embed = BaseEmbed.setTitle(`Trade Started by ${interaction.user.username}`)
+            .setDescription(`You have started a trade with <@${targetUser.id}>.`);
 
 		return interaction.reply({
 			embeds: [ embed ],
