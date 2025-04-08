@@ -40,6 +40,10 @@ const command = {
             target: targetUser.id,
         });
 
+		// If the users don't exist in the database, create an entry for them
+		await getUser(interaction.client, targetUser.id, targetUser.username);
+		await getUser(interaction.client, interaction.user.id, interaction.user.username);
+
         const embed = setupEmbed().setTitle(`Trade Started by ${interaction.user.username}`)
             .setDescription(`You have started a trade with <@${targetUser.id}>.`);
 
