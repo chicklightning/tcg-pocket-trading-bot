@@ -28,7 +28,6 @@ const generateEmbed = async (sortedCardList, targetUser, start) => {
     const titlePages = (current.length === sortedCardList.length) 
         ? ''
         : ` ${start + 1}-${start + current.length} out of ${sortedCardList.length}`;
-
     const embed = BaseEmbed.setTitle(`Cards Wanted by ${targetUser.nickname}${titlePages}`);
 
     let descriptionString = '';
@@ -65,27 +64,28 @@ const command = {
 		.setName('get-cards')
 		.setDescription('Get the list of cards you want others to trade to you.')
         .setContexts(InteractionContextType.Guild, InteractionContextType.BotDM)
-        .addIntegerOption(option =>
+        .addIntegerOption(option => {
             option.setName('rarity')
-                .setDescription('The rarity of cards you\'d like to display.')
-                .addChoices(
-                    { name: Rarities[0], value: 1 },
-                    { name: Rarities[1], value: 2 },
-                    { name: Rarities[2], value: 3 },
-                    { name: Rarities[3], value: 4 },
-                    { name: Rarities[4], value: 5 },
-                )
-                .setRequired(false))
-        .addStringOption(option =>
+            .setDescription('The rarity of cards you\'d like to display.');
+        
+            // Dynamically add rarity choices
+            Rarities.forEach((rarity, index) => {
+                option.addChoices({ name: rarity, value: index + 1 });
+            });
+
+            return option.setRequired(false);
+        })
+        .addStringOption(option => {
             option.setName('set')
-                .setDescription('The set of cards you\'d like to display.')
-                .addChoices(
-                    { name: Object.keys(Sets)[0], value: Object.keys(Sets)[0] },
-                    { name: Object.keys(Sets)[1], value: Object.keys(Sets)[1] },
-                    { name: Object.keys(Sets)[2], value: Object.keys(Sets)[2] },
-                    { name: Object.keys(Sets)[3], value: Object.keys(Sets)[3] },
-                )
-                .setRequired(false))
+                .setDescription('The set of cards you\'d like to display.');
+            
+            // Dynamically add set choices
+            Object.keys(Sets).forEach(setName => {
+                option.addChoices({ name: setName, value: setName });
+            });
+
+            return option.setRequired(false);
+        })
         .addUserOption(option =>
             option.setName('target')
                 .setDescription('The user whose desired cards you want to view. If not specified, you will see your own list.')
