@@ -45,7 +45,6 @@ const command = {
 
 		return interaction.reply({
 			embeds: [ embed ],
-			flags: MessageFlags.Ephemeral,
 		});
 	},
 	cooldown: 1,

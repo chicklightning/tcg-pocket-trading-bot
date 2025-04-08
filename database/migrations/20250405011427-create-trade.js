@@ -11,10 +11,18 @@ export async function up(queryInterface, Sequelize) {
     desiredCardA: {
       type: Sequelize.STRING,
       allowNull: true,
+      references: {
+        model: 'Cards',
+        key: 'id',
+      },
     },
     desiredCardB: {
       type: Sequelize.STRING,
       allowNull: true,
+      references: {
+        model: 'Cards',
+        key: 'id',
+      },
     },
     isValid: {
       type: Sequelize.BOOLEAN,
