@@ -154,7 +154,8 @@ const command = {
         const canFitOnOnePage = tradesList.length <= 10;
         const embedMessage = await interaction.reply({
             embeds: [ ...await generateEmbeds(tradesList, interaction, targetUser, 0) ],
-            components: canFitOnOnePage ? [] : [ row ]
+            components: canFitOnOnePage ? [] : [ row ],
+            flags: MessageFlags.Ephemeral,
         });
 
         // Exit if there is only one page of guilds (no need for all of this)
@@ -179,7 +180,8 @@ const command = {
                         // forward button if it isn't the end
                         ...(currentIndex + 10 < tradesList.length ? [ forwardButton ] : [])
                     )
-                ]
+                ],
+                flags: MessageFlags.Ephemeral,
             });
         });
 	},
