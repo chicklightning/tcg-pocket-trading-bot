@@ -1,4 +1,4 @@
-import { EmbedBuilder, InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
+import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { BaseEmbed, Rarities, Sets } from '../command-utilities.js';
 import { Models, getModel, getUser } from '../../database/database-utilities.js';
 
@@ -96,7 +96,6 @@ const command = {
 		const cardIdsWithCount = Array.from(new Set(cardIds)).map(a =>
 			({ name: a, count: cardIds.filter(f => f === a).length }));
 
-		// TODO: Make a utility for a base embed builder
 		const embed = BaseEmbed.setTitle(`Cards Added by ${currentUser.nickname}`);
 
 		const cards = getModel(interaction.client.db, Models.Card);
