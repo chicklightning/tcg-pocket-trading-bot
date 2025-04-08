@@ -35,7 +35,7 @@ const command = {
                 },
                 {
                     name: 'Autocomplete',
-                    value: 'For each card "input" option, you can start typing the name of the card you want (like "sha" for "Shaymin") and a list of matching cards will appear. You should select one of these options rather than typing your own, or the command will not add the card.'
+                    value: 'For each card "input" option, you can start typing the name of the card you want (like "sha" for "Shaymin") and a list of matching tradeable cards will appear. You should select one of these options rather than typing your own, or the command will not add the card.'
                 },
                 {
                     name: 'Multiple copies of a card',
@@ -59,7 +59,7 @@ const command = {
                 },
                 {
                     name: 'Autocomplete',
-                    value: 'For each card "input" option, you can start typing the name of the card you want (like "sha" for "Shaymin") and a list of matching cards will appear. You should select one of these options rather than typing your own, or the command will not remove the card.'
+                    value: 'For each card "input" option, you can start typing the name of the card you want (like "sha" for "Shaymin") and a list of matching tradeable cards will appear. You should select one of these options rather than typing your own, or the command will not remove the card.'
                 },
                 {
                     name: 'Multiple copies of a card',

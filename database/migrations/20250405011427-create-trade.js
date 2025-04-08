@@ -3,9 +3,10 @@
 export async function up(queryInterface, Sequelize) {
   await queryInterface.createTable('Trades', {
     id: {
-      allowNull: false,
+      type: Sequelize.INTEGER,
       primaryKey: true,
-      type: Sequelize.STRING,
+      autoIncrement: true,
+      allowNull: false,
     },
     desiredCardA: {
       type: Sequelize.STRING,

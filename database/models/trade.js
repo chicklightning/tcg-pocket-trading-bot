@@ -15,12 +15,6 @@ export default (sequelize, DataTypes) => {
     }
   }
   Trade.init({
-    id: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      primaryKey: true,
-      unique: true,
-    },
     desiredCardA: {
       type: DataTypes.STRING,
       allowNull: true,
