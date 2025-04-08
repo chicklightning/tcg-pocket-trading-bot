@@ -4,6 +4,8 @@ import { setupEmbed } from '../command-utilities.js';
 const addCardsCommand = '/add-cards';
 const removeCardsCommand = '/remove-cards';
 const getCardsCommand = '/get-cards';
+const startTradeCommand = '/start-trade';
+const getOpenTradesCommand = '/get-open-trades';
 
 const command = {
 	data: new SlashCommandBuilder()
@@ -18,6 +20,8 @@ const command = {
                     { name: addCardsCommand, value: addCardsCommand },
                     { name: removeCardsCommand, value: removeCardsCommand },
                     { name: getCardsCommand, value: getCardsCommand },
+                    { name: startTradeCommand, value: startTradeCommand },
+                    { name: getOpenTradesCommand, value: getOpenTradesCommand },
                 )),
 	async execute(interaction) {
 		const commandName = interaction.options.getString('command-name') ?? '';
@@ -87,9 +91,45 @@ const command = {
                 },
                 {
                     name: 'Pagination',
-                    value: 'If there are more than 25 cards in the returned list, the response is paginated so you can scroll between pages in the list using the arrow buttons that appear at the bottom of the response.'
+                    value: 'If there are more than 25 cards in the returned list, the response is paginated so you can scroll between pages in the list using the arrow buttons that appear at the bottom of the response. This will stop working after a period of time, so you can\'t go back to all old messages and scroll.'
                 },
             ]);
+        }
+        else if (commandName === startTradeCommand) {
+            embed = setupEmbed()
+                .setTitle(`Command Help: ${startTradeCommand}`)
+                .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki/User-manual#start-trade')
+                .setDescription('This command lets you start a trade with another user. It sends a DM to the other user letting them know.')
+                .addFields([
+                    {
+                        name: 'Target',
+                        value: 'You must specify another user to start the trade with or you cannot complete the command. You cannot have multiple open trades with the same user.'
+                    },
+                    {
+                        name: 'Error states',
+                        value: 'If you have an open trade with your target user and attempt to open another trade, the bot will let you know in the response and the other user will not receive a new DM.'
+                    },
+                ]);
+        }
+        else if (commandName === getOpenTradesCommand) {
+            embed = setupEmbed()
+                .setTitle(`Command Help: ${getOpenTradesCommand}`)
+                .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki/User-manual#get-open-trades')
+                .setDescription('This command lets you see your open (not completed) trades.')
+                .addFields([
+                    {
+                        name: 'Target',
+                        value: 'You can specify a target and see if you have an open trade with this user. If you don\'t specify a target, you will see all of your open trades.'
+                    },
+                    {
+                        name: 'Pagination',
+                        value: 'If there are more than 10 trades in the returned list, the response is paginated so you can scroll between pages in the list using the arrow buttons that appear at the bottom of the response. This will stop working after a period of time, so you can\'t go back to all old messages and scroll.'
+                    },
+                    {
+                        name: 'Error states',
+                        value: 'If you specify a target and do not have an open trade with them, the bot will let you know in the response.'
+                    },
+                ]);
         }
         else {
             embed = setupEmbed()
@@ -97,7 +137,7 @@ const command = {
                 .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki/User-manual#help')
                 .setDescription('Use this command to get help for specific commands. Specify a command name to get detailed information about it.')
                 .addFields([
-                    { name: 'Available Commands', value: `${addCardsCommand}, ${removeCardsCommand}, ${getCardsCommand}` },
+                    { name: 'Available Commands', value: `${addCardsCommand}, ${removeCardsCommand}, ${getCardsCommand}, ${startTradeCommand}, ${getOpenTradesCommand}` },
                     { name: 'Usage', value: '/help command-name:[command-name]' },
                 ]);
         }
