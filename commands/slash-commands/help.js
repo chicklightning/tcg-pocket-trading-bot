@@ -6,6 +6,7 @@ const removeCardsCommand = '/remove-cards';
 const getCardsCommand = '/get-cards';
 const startTradeCommand = '/start-trade';
 const getOpenTradesCommand = '/get-open-trades';
+const offerCardCommand = '/offer-card';
 
 const command = {
 	data: new SlashCommandBuilder()
@@ -22,6 +23,7 @@ const command = {
                     { name: getCardsCommand, value: getCardsCommand },
                     { name: startTradeCommand, value: startTradeCommand },
                     { name: getOpenTradesCommand, value: getOpenTradesCommand },
+                    { name: offerCardCommand, value: offerCardCommand}
                 )),
 	async execute(interaction) {
 		const commandName = interaction.options.getString('command-name') ?? '';
@@ -112,6 +114,26 @@ const command = {
                 ]);
         }
         else if (commandName === getOpenTradesCommand) {
+            embed = setupEmbed()
+                .setTitle(`Command Help: ${getOpenTradesCommand}`)
+                .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki/User-manual#get-open-trades')
+                .setDescription('This command lets you see your open (not completed) trades.')
+                .addFields([
+                    {
+                        name: 'Target',
+                        value: 'You can specify a target and see if you have an open trade with this user. If you don\'t specify a target, you will see all of your open trades.'
+                    },
+                    {
+                        name: 'Pagination',
+                        value: 'If there are more than 10 trades in the returned list, the response is paginated so you can scroll between pages in the list using the arrow buttons that appear at the bottom of the response. This will stop working after a period of time, so you can\'t go back to all old messages and scroll.'
+                    },
+                    {
+                        name: 'Error states',
+                        value: 'If you specify a target and do not have an open trade with them, the bot will let you know in the response.'
+                    },
+                ]);
+        }
+        else if (commandName === offerCardCommand) {
             embed = setupEmbed()
                 .setTitle(`Command Help: ${getOpenTradesCommand}`)
                 .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki/User-manual#get-open-trades')

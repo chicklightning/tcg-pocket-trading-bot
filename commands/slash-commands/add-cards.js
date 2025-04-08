@@ -66,7 +66,7 @@ const command = {
 		await interaction.respond(
 			filtered.map(
 				choice => ({
-						name: `${choice.name} from ${Sets[choice.packSet]} ${Rarities[choice.rarity - 1]}`,
+						name: `${choice.name} ${Rarities[choice.rarity - 1]} from ${Sets[choice.packSet]}`,
 						value: choice.id 
 					})),
 		);

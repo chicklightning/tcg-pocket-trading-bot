@@ -29,7 +29,7 @@ export async function getUser(client, userId, userNickname) {
         fetchedUser = await users.create({ id: userId, nickname: userNickname });
         console.log(`[LOG] Created new user entry for ${userNickname} (${userId})`);
     }
-    else if (fetchedUser.nickname !== userNickname) {
+    else if (userNickname && fetchedUser.nickname !== userNickname) {
         fetchedUser.nickname = userNickname;
         await fetchedUser.save();
         console.log(`[LOG] Updated nickname for user ${userId} to ${userNickname}`);
