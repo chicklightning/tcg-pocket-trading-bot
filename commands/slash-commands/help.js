@@ -79,7 +79,7 @@ const command = {
             embed = setupEmbed()
             .setTitle(`Command Help: ${getCardsCommand}`)
             .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki/User-manual#get-cards')
-            .setDescription('This command returns the list of cards you want other users to trade to you. Each card has a link to an image of the card.')
+            .setDescription('This command returns a user\'s list of cards they wanted traded to them (your own by default). Each card has a link to an image of the card.')
             .addFields([
                 {
                     name: 'Filtering',
@@ -87,7 +87,7 @@ const command = {
                 },
                 {
                     name: 'Target',
-                    value: 'You can request to see another user\'s list of desired trade cards by typing their handle (using "@") in the "target" option.'
+                    value: 'You can request to see another user\'s list of desired trade cards by typing their handle in the "target" option.'
                 },
                 {
                     name: 'Pagination',
@@ -99,7 +99,7 @@ const command = {
             embed = setupEmbed()
                 .setTitle(`Command Help: ${startTradeCommand}`)
                 .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki/User-manual#start-trade')
-                .setDescription('This command lets you start a trade with another user. It sends a DM to the other user letting them know.')
+                .setDescription('This command lets you start a trade with another user. It sends a DM to the other user letting them know. You must start a trade before offering a card.')
                 .addFields([
                     {
                         name: 'Target',
