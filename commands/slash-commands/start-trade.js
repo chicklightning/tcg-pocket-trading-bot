@@ -1,6 +1,6 @@
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { setupEmbed } from '../command-utilities.js';
-import { Models, getModel } from '../../database/database-utilities.js';
+import { Models, getModel, getUser } from '../../database/database-utilities.js';
 import { Op } from 'sequelize';
 
 const command = {
@@ -34,15 +34,15 @@ const command = {
             });
         }
 
+		// If the users don't exist in the database, create an entry for them
+		await getUser(interaction.client, targetUser.id, targetUser.username);
+		await getUser(interaction.client, interaction.user.id, interaction.user.username);
+
         // Create a new trade
         await trades.create({
             owner: interaction.user.id,
             target: targetUser.id,
         });
-
-		// If the users don't exist in the database, create an entry for them
-		await getUser(interaction.client, targetUser.id, targetUser.username);
-		await getUser(interaction.client, interaction.user.id, interaction.user.username);
 
         const embed = setupEmbed().setTitle(`Trade Started by ${interaction.user.username}`)
             .setDescription(`You have started a trade with <@${targetUser.id}>.`);

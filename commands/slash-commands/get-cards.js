@@ -111,7 +111,7 @@ const command = {
                     return true;
                 })
                 .sort((a, b) => {
-                    return (a.rarity - b.rarity) + a.name.localeCompare(b.name); // Sort by name (alphabetically)
+                    return (a.rarity === b.rarity) ? a.name.localeCompare(b.name) : a.rarity - b.rarity;
                 });
             
             // Send the embed with the first 25 cards
