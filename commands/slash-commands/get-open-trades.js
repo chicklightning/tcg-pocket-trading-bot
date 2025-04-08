@@ -42,10 +42,13 @@ const generateEmbeds = async (tradesList, interaction, start) => {
         const cardA = trade.desiredCardA !== null ? await cards.findByPk(trade.desiredCardA) : null;
         const cardB = trade.desiredCardB !== null ? await cards.findByPk(trade.desiredCardB) : null;
 
-        if (tradesList === 1) {
+        if (targetUser) {
             if (cardA) {
                 const cardOwner = trade.owner === interaction.user.id ? 'You\'re' : 'They\'re';
                 descriptionString += ` ${cardOwner} offering ${cardA.name} ${Rarities[cardA.rarity - 1]} from ${cardA.packSet} and `;
+                embed
+                    .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki')
+                    .setImage(cardA.image);
             }
             else {
                 const cardOwner = trade.owner === interaction.user.id ? 'You' : 'They';
@@ -55,22 +58,18 @@ const generateEmbeds = async (tradesList, interaction, start) => {
             if (cardB) {
                 const cardOwner = trade.target === interaction.user.id ? 'you\'re' : 'they\'re';
                 descriptionString += `${cardOwner} offering ${cardB.name} ${Rarities[cardB.rarity - 1]} from ${cardB.packSet}.\n`;
+
+                // If two embeds are created with the same URL, Discord will aggregate the images from both into a single embed,
+                //   so let's show the card images since it's a single trade being shown
+                const secondEmbed = new EmbedBuilder()
+                    .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki')
+                    .setImage(cardB.image);
+                embeds.push(secondEmbed);
             }
             else {
                 const cardOwner = trade.target === interaction.user.id ? 'you' : 'they';
                 descriptionString += `${cardOwner} have not offered a card.\n`;
             }
-
-            // If two embeds are created with the same URL, Discord will aggregate the images from both into a single embed,
-            //   so let's show the card images since it's a single trade being shown
-            embed
-                .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki')
-                .setImage(cardA.image);
-            
-            const secondEmbed = new EmbedBuilder()
-                .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki')
-                .setImage(cardB.image);
-            embeds.push(secondEmbed);
         }
         else {
             if (cardA) {
