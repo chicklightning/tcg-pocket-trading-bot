@@ -23,15 +23,17 @@ const forwardButton = new ButtonBuilder()
  * @param {number} start The index to start from.
  * @returns {Promise<EmbedBuilder>}
  */
-const generateEmbeds = async (tradesList, user, start) => {
+const generateEmbeds = async (tradesList, interaction, start) => {
     const current = tradesList.slice(start, start + 10)
   
     const titlePages = (current.length === tradesList.length) 
         ? ''
         : ` ${start + 1}-${start + current.length} out of ${tradesList.length}`;
 
-    let embeds = {};
-    const embed = setupEmbed().setTitle(`Open Trade${tradesList.length === 1 ? '' : 's'} with ${user.nickname}${titlePages}`);
+    let embeds = [];
+    const targetUser = interaction.options.getUser('target');
+    const tradeWithText = targetUser ? ` with ${interaction.options.getUser('target').username}` : '';
+    const embed = setupEmbed().setTitle(`Open Trade${tradesList.length === 1 ? '' : 's'}${tradeWithText}${titlePages}`);
     embeds.push(embed);
 
     let descriptionString = '';
@@ -42,20 +44,20 @@ const generateEmbeds = async (tradesList, user, start) => {
 
         if (tradesList === 1) {
             if (cardA) {
-                const cardOwner = trade.owner === user.id ? 'You\'re' : 'They\'re';
+                const cardOwner = trade.owner === interaction.user.id ? 'You\'re' : 'They\'re';
                 descriptionString += ` ${cardOwner} offering ${cardA.name} ${Rarities[cardA.rarity - 1]} from ${cardA.packSet} and `;
             }
             else {
-                const cardOwner = trade.owner === user.id ? 'You' : 'They';
+                const cardOwner = trade.owner === interaction.user.id ? 'You' : 'They';
                 descriptionString += `${cardOwner} have not offered a card and `;
             }
             
             if (cardB) {
-                const cardOwner = trade.target === user.id ? 'you\'re' : 'they\'re';
+                const cardOwner = trade.target === interaction.user.id ? 'you\'re' : 'they\'re';
                 descriptionString += `${cardOwner} offering ${cardB.name} ${Rarities[cardB.rarity - 1]} from ${cardB.packSet}.\n`;
             }
             else {
-                const cardOwner = trade.target === user.id ? 'you' : 'they';
+                const cardOwner = trade.target === interaction.user.id ? 'you' : 'they';
                 descriptionString += `${cardOwner} have not offered a card.\n`;
             }
 
@@ -72,20 +74,20 @@ const generateEmbeds = async (tradesList, user, start) => {
         }
         else {
             if (cardA) {
-                const cardOwner = trade.owner === user.id ? 'You\'re' : `<@${trade.owner}> is`;
-                descriptionString += `- ${cardOwner} offering [${cardA.name}](${cardA.image}) ${Rarities[cardA.rarity - 1]} from ${cardA.packSet} and `;
+                const cardOwner = trade.owner === interaction.user.id ? 'You have' : `<@${trade.owner}> has`;
+                descriptionString += `- ${cardOwner} offered [${cardA.name}](${cardA.image}) ${Rarities[cardA.rarity - 1]} from ${cardA.packSet} and `;
             }
             else {
-                const cardOwner = trade.owner === user.id ? 'You have' : `<@${trade.owner}> has`;
+                const cardOwner = trade.owner === interaction.user.id ? 'You have' : `<@${trade.owner}> has`;
                 descriptionString += `- ${cardOwner} not offered a card and `;
             }
             
             if (cardB) {
-                const cardOwner = trade.target === user.id ? 'you\'re' : `<@${trade.target}> is`;
-                descriptionString += `${cardOwner} offering [${cardB.name}](${cardB.image}) ${Rarities[cardB.rarity - 1]} from ${cardB.packSet}.\n`;
+                const cardOwner = trade.target === interaction.user.id ? 'you have' : `<@${trade.target}> has`;
+                descriptionString += `${cardOwner} offered [${cardB.name}](${cardB.image}) ${Rarities[cardB.rarity - 1]} from ${cardB.packSet}.\n`;
             }
             else {
-                const cardOwner = trade.target === user.id ? 'you have' : `<@${trade.target}> has`;
+                const cardOwner = trade.target === interaction.user.id ? 'you have' : `<@${trade.target}> has`;
                 descriptionString += `${cardOwner} not offered a card.\n`;
             }
         }
@@ -148,7 +150,7 @@ const command = {
         
         const canFitOnOnePage = tradesList.length <= 10;
         const embedMessage = await interaction.reply({
-            embeds: [ ...await generateEmbeds(tradesList, interaction.user, 0) ],
+            embeds: [ ...await generateEmbeds(tradesList, interaction, 0) ],
             components: canFitOnOnePage ? [] : [ row ]
         });
 
@@ -166,7 +168,7 @@ const command = {
 
             // Respond to interaction by updating message with new embed
             await interaction.update({
-                embeds: [ ...await generateEmbeds(tradesList, interaction.user, currentIndex) ],
+                embeds: [ ...await generateEmbeds(tradesList, interaction, currentIndex) ],
                 components: [
                     new ActionRowBuilder().addComponents(
                         // back button if it isn't the start
