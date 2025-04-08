@@ -33,6 +33,14 @@ export async function up(queryInterface, Sequelize) {
         key: 'id',
       },
     },
+    target: {
+      type: Sequelize.STRING,
+      allowNull: false,
+      references: {
+        model: 'Users',
+        key: 'id',
+      },
+    },
     createdAt: {
       allowNull: false,
       type: Sequelize.DATE

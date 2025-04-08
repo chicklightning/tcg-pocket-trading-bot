@@ -45,7 +45,14 @@ export default (sequelize, DataTypes) => {
       validate: {
         notEmpty: true,
       },
-    }
+    },
+    target: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
   }, {
     sequelize,
     modelName: 'Trade',
