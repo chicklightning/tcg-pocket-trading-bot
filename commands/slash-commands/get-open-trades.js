@@ -23,7 +23,7 @@ const forwardButton = new ButtonBuilder()
  * @param {number} start The index to start from.
  * @returns {Promise<EmbedBuilder>}
  */
-const generateEmbeds = async (tradesList, interaction, start) => {
+const generateEmbeds = async (tradesList, interaction, targetUser, start) => {
     const current = tradesList.slice(start, start + 10)
   
     const titlePages = (current.length === tradesList.length) 
@@ -31,8 +31,7 @@ const generateEmbeds = async (tradesList, interaction, start) => {
         : ` ${start + 1}-${start + current.length} out of ${tradesList.length}`;
 
     let embeds = [];
-    const targetUser = interaction.options.getUser('target');
-    const tradeWithText = targetUser ? ` with ${interaction.options.getUser('target').username}` : '';
+    const tradeWithText = targetUser ? ` with ${targetUser.username}` : '';
     const embed = setupEmbed().setTitle(`Open Trade${tradesList.length === 1 ? '' : 's'}${tradeWithText}${titlePages}`);
     embeds.push(embed);
 
@@ -92,7 +91,12 @@ const generateEmbeds = async (tradesList, interaction, start) => {
         }
     }));
 
-    embed.setDescription(descriptionString)
+    if (descriptionString.length === 0) {
+        embed.setDescription('You have no open trades.');
+    }
+    else {
+        embed.setDescription(descriptionString);
+    }
 
     return embeds;
 };
@@ -149,7 +153,7 @@ const command = {
         
         const canFitOnOnePage = tradesList.length <= 10;
         const embedMessage = await interaction.reply({
-            embeds: [ ...await generateEmbeds(tradesList, interaction, 0) ],
+            embeds: [ ...await generateEmbeds(tradesList, interaction, targetUser, 0) ],
             components: canFitOnOnePage ? [] : [ row ]
         });
 
@@ -167,13 +171,13 @@ const command = {
 
             // Respond to interaction by updating message with new embed
             await interaction.update({
-                embeds: [ ...await generateEmbeds(tradesList, interaction, currentIndex) ],
+                embeds: [ ...await generateEmbeds(tradesList, interaction, targetUser, currentIndex) ],
                 components: [
                     new ActionRowBuilder().addComponents(
                         // back button if it isn't the start
                         ...(currentIndex ? [ backButton ] : []),
                         // forward button if it isn't the end
-                        ...(currentIndex + 10 < sortedCards.length ? [ forwardButton ] : [])
+                        ...(currentIndex + 10 < tradesList.length ? [ forwardButton ] : [])
                     )
                 ]
             });
