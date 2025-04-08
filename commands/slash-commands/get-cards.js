@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, InteractionContextType, SlashCommandBuilder } from 'discord.js';
-import { BaseEmbed, Rarities, Sets } from '../command-utilities.js';
+import { Rarities, Sets, setupEmbed } from '../command-utilities.js';
 import { getUser } from '../../database/database-utilities.js';
 
 const backId = 'back'
@@ -28,7 +28,7 @@ const generateEmbed = async (sortedCardList, targetUser, start) => {
     const titlePages = (current.length === sortedCardList.length) 
         ? ''
         : ` ${start + 1}-${start + current.length} out of ${sortedCardList.length}`;
-    const embed = BaseEmbed.setTitle(`Cards Wanted by ${targetUser.nickname}${titlePages}`);
+    const embed = setupEmbed().setTitle(`Cards Wanted by ${targetUser.nickname}${titlePages}`);
 
     let descriptionString = '';
     await Promise.all(current.map(async card => {

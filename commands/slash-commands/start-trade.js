@@ -1,6 +1,6 @@
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
-import { BaseEmbed, Rarities, Sets } from '../command-utilities.js';
-import { Models, getModel, getUser } from '../../database/database-utilities.js';
+import { setupEmbed } from '../command-utilities.js';
+import { Models, getModel } from '../../database/database-utilities.js';
 
 const command = {
 	data: new SlashCommandBuilder()
@@ -39,7 +39,7 @@ const command = {
             target: targetUser.id,
         });
 
-        const embed = BaseEmbed.setTitle(`Trade Started by ${interaction.user.username}`)
+        const embed = setupEmbed().setTitle(`Trade Started by ${interaction.user.username}`)
             .setDescription(`You have started a trade with <@${targetUser.id}>.`);
 
 		return interaction.reply({

@@ -1,5 +1,5 @@
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
-import { BaseEmbed } from '../command-utilities.js';
+import { setupEmbed } from '../command-utilities.js';
 
 const addCardsCommand = '/add-cards';
 const removeCardsCommand = '/remove-cards';
@@ -22,7 +22,9 @@ const command = {
 	async execute(interaction) {
 		const commandName = interaction.options.getString('command-name') ?? '';
         
-        const addCardsEmbed = new BaseEmbed()
+        let embed;
+        if (commandName === addCardsCommand) {
+            embed = setupEmbed()
             .setTitle(`Command Help: ${addCardsCommand}`)
             .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki/User-manual#add-cards')
             .setDescription('This command lets you add cards to the list of cards you want other people to trade to you (so cards you need).')
@@ -44,8 +46,9 @@ const command = {
                     value: 'If you attempt to add a card to your list that doesn\'t exist or was mistyped, the command will let you know in the response.'
                 },
             ]);
-        
-        const removeCardsEmbed = new BaseEmbed()
+        }
+        else if (commandName === removeCardsCommand) {
+            embed = setupEmbed()
             .setTitle(`Command Help: ${removeCardsCommand}`)
             .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki/User-manual#remove-cards')
             .setDescription('This command lets you remove cards from the list of cards you want other people to trade to you (so cards you no longer need).')
@@ -67,8 +70,9 @@ const command = {
                     value: 'If you attempt to remove a card from your list that was never in your list or remove more copies of a card than were in your list, the command will let you know in the response.'
                 },
             ]);
-        
-        const getCardsEmbed = new BaseEmbed()
+        }
+        else if (commandName === getCardsCommand) {
+            embed = setupEmbed()
             .setTitle(`Command Help: ${getCardsCommand}`)
             .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki/User-manual#get-cards')
             .setDescription('This command returns the list of cards you want other users to trade to you. Each card has a link to an image of the card.')
@@ -86,19 +90,9 @@ const command = {
                     value: 'If there are more than 25 cards in the returned list, the response is paginated so you can scroll between pages in the list using the arrow buttons that appear at the bottom of the response.'
                 },
             ]);
-        
-        let embed;
-        if (commandName === addCardsCommand) {
-            embed = addCardsEmbed;
-        }
-        else if (commandName === removeCardsCommand) {
-            embed = removeCardsEmbed;
-        }
-        else if (commandName === getCardsCommand) {
-            embed = getCardsEmbed;
         }
         else {
-            embed = new BaseEmbed()
+            embed = setupEmbed()
                 .setTitle('Command Help')
                 .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki/User-manual#help')
                 .setDescription('Use this command to get help for specific commands. Specify a command name to get detailed information about it.')
