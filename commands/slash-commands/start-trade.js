@@ -44,11 +44,22 @@ const command = {
             target: targetUser.id,
         });
 
-        const embed = setupEmbed().setTitle(`Trade Started by ${interaction.user.username}`)
+        const response = setupEmbed().setTitle(`Trade Started by ${interaction.user.username}`)
             .setDescription(`You have started a trade with <@${targetUser.id}>.`);
 
+		const targetUserEmbed = setupEmbed().setTitle(`Trade Started by ${interaction.user.username}`)
+            .setDescription(`This user has started a trade with you.`);
+
+		targetUser.send({
+			embeds: [ targetUserEmbed ],
+			flags: MessageFlags.Ephemeral,
+		}).catch(() => {
+			// If the user has DMs disabled, we can't notify them
+		});
+
 		return interaction.reply({
-			embeds: [ embed ],
+			embeds: [ response ],
+			flags: MessageFlags.Ephemeral,
 		});
 	},
 	cooldown: 1,
