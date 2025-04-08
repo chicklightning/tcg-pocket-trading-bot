@@ -6,7 +6,7 @@ import { Op } from 'sequelize';
 const command = {
 	data: new SlashCommandBuilder()
 		.setName('start-trade')
-		.setDescription('Start a trade with another user.')
+		.setDescription('Start a trade with another user. You must start a trade before offering a card.')
 		.setContexts(InteractionContextType.Guild)
 		.addUserOption(option =>
             option.setName('target')
@@ -14,6 +14,13 @@ const command = {
                 .setRequired(true)),
 	async execute(interaction) {
 		const targetUser = interaction.options.getUser('target');
+
+		if (targetUser.id === interaction.user.id) {
+            return interaction.reply({
+                content: `You can't start a trade with yourself.`,
+                flags: MessageFlags.Ephemeral,
+            });
+        }
 
         // Check if there is an ongoing trade between the two users
         const trades = getModel(interaction.client.db, Models.Trade);
