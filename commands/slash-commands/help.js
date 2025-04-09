@@ -15,7 +15,7 @@ const command = {
 	data: new SlashCommandBuilder()
 		.setName('help')
 		.setDescription('Add one or more cards to the list of cards you want others to trade to you.')
-		.setContexts(InteractionContextType.Guild, InteractionContextType.BotDM)
+		.setContexts(InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel)
 		.addStringOption(option =>
 			option.setName('command-name')
 				.setDescription('Name of the command you want information on.')
@@ -42,7 +42,7 @@ const command = {
                 .addFields([
                     {
                         name: 'Scope',
-                        value: 'This command can be called in DMs with the bot or in a server channel.'
+                        value: 'This command can be called in DMs with the bot, DMs with other users, or in a server channel.'
                     },
                     {
                         name: 'Constraints',
@@ -70,7 +70,7 @@ const command = {
                 .addFields([
                     {
                         name: 'Scope',
-                        value: 'This command can be called in DMs with the bot or in a server channel.'
+                        value: 'This command can be called in DMs with the bot, DMs with other users, or in a server channel.'
                     },
                     {
                         name: 'Constraints',
@@ -98,15 +98,19 @@ const command = {
                 .addFields([
                     {
                         name: 'Scope',
-                        value: 'This command can be called in DMs with the bot or in a server channel. You cannot target other users if it\'s called in the bot\'s DMs.'
+                        value: 'This command can be called in DMs with the bot, DMs with other users, or in a server channel. You cannot target other users if it\'s called in the bot\'s DMs.'
                     },
                     {
                         name: 'Filtering',
-                        value: 'You can optionally filter the list based on rarity or on card set (i.e. Triumphant Light). You can only pick one rarity and/or one set, so you can show all ⭐ cards you want from Genetic Apex, but not all ♦️ and ♦️♦️ cards. The default filtering is all rarities and all card sets if you do not choose an option for either.'
+                        value: 'You can optionally filter the list based on rarity or on card set (i.e. Triumphant Light). You can only pick one rarity and/or one set, so you can show all ⭐ cards you want from Genetic Apex, but not all ♦️ and ♦️♦️ cards. The default filtering is all rarities and all card sets if you do not choose an option for either.\n\nIf you select a target, you can opt to only show cards that they need that you don\'t also need by setting "filter-my-cards" to True. This is OFF by default.'
                     },
                     {
                         name: 'Target',
                         value: 'You can request to see another user\'s list of desired trade cards by typing their handle in the "target" option.'
+                    },
+                    {
+                        name: 'Visibility',
+                        value: 'By default, the response of this command is only visible to you. If you want the response to be visible to all users in the channel, set the "visible-to-all" option to True.'
                     },
                     {
                         name: 'Pagination',
@@ -122,7 +126,7 @@ const command = {
                 .addFields([
                     {
                         name: 'Scope',
-                        value: 'This command can be called in a server channel.'
+                        value: 'This command can be called in DMs with other users or in a server channel.'
                     },
                     {
                         name: 'Target',
@@ -142,7 +146,7 @@ const command = {
                 .addFields([
                     {
                         name: 'Scope',
-                        value: 'This command can be called in DMs with the bot or in a server channel. You cannot target other users if it\'s called in the bot\'s DMs.'
+                        value: 'This command can be called in DMs with the bot, DMs with other users, or in a server channel. You cannot target other users if it\'s called in the bot\'s DMs.'
                     },
                     {
                         name: 'Target',
@@ -166,7 +170,7 @@ const command = {
                 .addFields([
                     {
                         name: 'Scope',
-                        value: 'This command can be called in a server channel.'
+                        value: 'This command can be called in DMs with other users or in a server channel.'
                     },
                     {
                         name: 'Target',
@@ -174,7 +178,7 @@ const command = {
                     },
                     {
                         name: 'Autocomplete',
-                        value: 'For the card you want to offer, you can start typing the name of the card you want (like "sha" for "Shaymin") and a list of matching tradeable cards will appear. The list shown by default is the list of cards the other user wants if they have any, otherwise it will show the list of all cards. If the other user has already offered a card, the autocomplete options will be filtered to cards of a matching rarity from the other user\'s desired cards list if they have any, otherwise it will show all tradeable cards with a matching rarity.',
+                        value: 'For the card you want to offer, you can start typing the name of the card you want (like "sha" for "Shaymin") and a list of matching tradeable cards will appear. The list shown by default is the list of cards the other user wants if they have any, otherwise it will show the list of all cards.\n\nIf the other user has already offered a card, the autocomplete options will be filtered to cards of a matching rarity from the other user\'s desired cards list if they have any, otherwise it will show all tradeable cards with a matching rarity.\n\nAutocomplete will never suggest a card that you also need (a card in your list of desired cards).',
                     },
                     {
                         name: 'Autocomplete filter',
@@ -182,11 +186,11 @@ const command = {
                     },
                     {
                         name: 'Weird autocomplete behavior',
-                        value: 'The filtering behavior here is weird depending on what order you enter the command options and what text is in the "card" option. Discord caches whatever autocomplete list you were shown FIRST when entering the command and you\'ll see this list whenever the "card" option has text you\'ve entered before (like an empty "card" text box or just the letter "s"), even if you\'ve updated the filter or changed the target user. If you start typing more of your query, your autocomplete options will match the options you expect to see from the filters you have turned on or off. This is unfortunately behavior I cannot change. If your autocomplete options stop matching what you expect to see, restart typing the command.'
+                        value: 'The filtering behavior here is weird depending on what order you enter the command options and what text is in the "card" option. Discord caches whatever autocomplete list you were shown FIRST when entering the command and you\'ll see this list whenever the "card" option has text you\'ve entered before (like an empty "card" text box or just the letter "s"), even if you\'ve updated the filter or changed the target user. If you start typing more of your query, your autocomplete options will match the options you expect to see from the filters you have turned on or off. This is unfortunately behavior I cannot change.\n\nIf your autocomplete options stop matching what you expect to see, restart typing the command.'
                     },
                     {
                         name: 'Error states',
-                        value: 'If you don\'t have a trade open with this user, the bot will let you know in the response.'
+                        value: 'If you don\'t have a trade open with this user or you offer a card that doesn\'t exist (or mistyped the name), the bot will let you know in the response.'
                     },
                 ]);
         }
@@ -198,7 +202,7 @@ const command = {
                 .addFields([
                     {
                         name: 'Scope',
-                        value: 'This command can be called in a server channel.'
+                        value: 'This command can be called in DMs with other users or in a server channel.'
                     },
                     {
                         name: 'Target',
@@ -218,7 +222,7 @@ const command = {
                 .addFields([
                     {
                         name: 'Scope',
-                        value: 'This command can be called in a server channel.'
+                        value: 'This command can be called in DMs with other users or in a server channel.'
                     },
                     {
                         name: 'Target',

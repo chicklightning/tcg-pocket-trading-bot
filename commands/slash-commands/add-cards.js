@@ -6,7 +6,7 @@ const command = {
 	data: new SlashCommandBuilder()
 		.setName('add-cards')
 		.setDescription('Add one or more cards to the list of cards you want others to trade to you.')
-		.setContexts(InteractionContextType.Guild, InteractionContextType.BotDM)
+		.setContexts(InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel)
 		.addStringOption(option =>
 			option.setName('first-card')
 				.setDescription('Name of the card you want to add to your list of desired cards.')

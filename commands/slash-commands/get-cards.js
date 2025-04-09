@@ -63,7 +63,7 @@ const command = {
 	data: new SlashCommandBuilder()
 		.setName('get-cards')
 		.setDescription('Get the list of cards you want others to trade to you.')
-        .setContexts(InteractionContextType.Guild, InteractionContextType.BotDM)
+        .setContexts(InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel)
         .addIntegerOption(option => {
             option.setName('rarity')
             .setDescription('The rarity of cards you\'d like to display.');
@@ -89,14 +89,29 @@ const command = {
         .addUserOption(option =>
             option.setName('target')
                 .setDescription('The user whose desired cards you want to view. If not specified, you will see your own list.')
+                .setRequired(false))
+        .addBooleanOption(option =>
+            option.setName('visible-to-all')
+                .setDescription('Set if message contents are visible to all users or only to you. OFF by default.')
+                .setRequired(false))
+        .addBooleanOption(option =>
+            option.setName('filter-my-cards')
+                .setDescription('If showing a target user\'s cards, don\'t show cards you also need. OFF by default.')
                 .setRequired(false)),
 	async execute(interaction) {
         const rarityFilter = interaction.options.getInteger('rarity') ?? 0; // 0 means no filter
         const setFilter = interaction.options.getString('set') ?? ''; // '' means no filter
         const userOption = interaction.options.getUser('target');
+        const visibility = interaction.options.getBoolean('visible-to-all') ?? false;
 		const targetUser = await getUser(interaction.client, userOption?.id ?? interaction.user.id, userOption?.username ?? interaction.user.username);
 
         if (targetUser.desiredCards && targetUser.desiredCards.length > 0) {
+            const filterDesiredCards = interaction.options.getBoolean('filter-my-cards') ?? false;
+            let user = null;
+            if (targetUser.id !== interaction.user.id && filterDesiredCards) {
+                user = await getUser(interaction.client, interaction.user.id, interaction.user.username);
+            }
+
             // Sort the desired cards by rarity (ascending) and then by name (alphabetically)
             const sortedCards = targetUser.desiredCards
                 .filter(card => {
@@ -106,6 +121,10 @@ const command = {
                     
                     if (setFilter !== '') {
                         return card.packSet.toLowerCase() === setFilter.toLowerCase(); // Filter by set if specified
+                    }
+
+                    if (user && filterDesiredCards) {
+                        return !user.desiredCards.find(userCard => userCard.id === card.id);
                     }
 
                     return true;
@@ -121,6 +140,7 @@ const command = {
             const canFitOnOnePage = sortedCards.length <= 25;
             const embedMessage = await interaction.reply({
                 embeds: [ await generateEmbed(sortedCards, targetUser, 0) ],
+                ephemeral: !visibility,
                 components: canFitOnOnePage ? [] : [ row ]
             });
 
@@ -140,6 +160,7 @@ const command = {
                 // Respond to interaction by updating message with new embed
                 await interaction.update({
                     embeds: [ await generateEmbed(sortedCards, targetUser, currentIndex) ],
+                    ephemeral: !visibility,
                     components: [
                         new ActionRowBuilder().addComponents(
                             // back button if it isn't the start

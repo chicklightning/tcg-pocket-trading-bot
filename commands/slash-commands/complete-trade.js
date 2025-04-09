@@ -7,7 +7,7 @@ const command = {
 	data: new SlashCommandBuilder()
 		.setName('complete-trade')
 		.setDescription('Completes a trade you\'ve started with another user.')
-		.setContexts(InteractionContextType.Guild)
+		.setContexts(InteractionContextType.Guild, InteractionContextType.PrivateChannel)
         .addUserOption(option =>
             option.setName('target')
                 .setDescription('The user you want to complete the trade with.')

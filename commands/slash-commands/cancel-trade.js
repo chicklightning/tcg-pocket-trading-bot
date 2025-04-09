@@ -7,7 +7,7 @@ const command = {
 	data: new SlashCommandBuilder()
 		.setName('cancel-trade')
 		.setDescription('Cancels a trade you\'ve started with another user.')
-		.setContexts(InteractionContextType.Guild)
+		.setContexts(InteractionContextType.Guild, InteractionContextType.PrivateChannel)
         .addUserOption(option =>
             option.setName('target')
                 .setDescription('The user you want to cancel the trade with.')

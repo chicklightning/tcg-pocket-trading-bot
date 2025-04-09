@@ -110,7 +110,7 @@ const command = {
 	data: new SlashCommandBuilder()
 		.setName('get-open-trades')
 		.setDescription('See your open trades.')
-		.setContexts(InteractionContextType.Guild, InteractionContextType.BotDM)
+		.setContexts(InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel)
 		.addUserOption(option =>
             option.setName('target')
                 .setDescription('Will show you an open trade with this user, if one exists.')

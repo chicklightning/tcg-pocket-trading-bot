@@ -7,7 +7,7 @@ const command = {
 	data: new SlashCommandBuilder()
 		.setName('offer-card')
 		.setDescription('Choose a card to offer to another user in a trade.')
-		.setContexts(InteractionContextType.Guild)
+		.setContexts(InteractionContextType.Guild, InteractionContextType.PrivateChannel)
         .addUserOption(option =>
             option.setName('target')
                 .setDescription('The user you want to offer a card to.')
@@ -38,6 +38,7 @@ const command = {
         let filteredList = [];
         const target = interaction.options.get('target');
         const targetUser = (target) ? await getUser(interaction.client, target.value, null) : null;
+        const user = await getUser(interaction.client, interaction.user.id, interaction.user.username);
         if (targetUser) {
             // Get trade between users so we can see if we need to filter offered cards by rarity
             const trades = getModel(interaction.client.db, Models.Trade);
@@ -77,7 +78,7 @@ const command = {
                     if (otherCardRarity !== 0 && rarityFilter) {
                         matchesRarity = (choice.rarity === otherCardRarity);
                     }
-                    return startsWith && matchesRarity;
+                    return startsWith && matchesRarity && !user.desiredCards.find((card) => card.id == choice.id);
                 })
                 .slice(0, 25); // Limit results to 25
 
@@ -90,7 +91,7 @@ const command = {
                         if (otherCardRarity !== 0 && rarityFilter) {
                             matchesRarity = (choice.rarity === otherCardRarity);
                         }
-                        return startsWith && matchesRarity;
+                        return startsWith && matchesRarity && !user.desiredCards.find((card) => card.id == choice.id);
                     })
                     .slice(0, 25); // Limit results to 25
             }
@@ -111,7 +112,7 @@ const command = {
                     if (otherCardRarity !== 0 && rarityFilter) {
                         matchesRarity = (choice.rarity === otherCardRarity);
                     }
-                    return startsWith && matchesRarity;
+                    return startsWith && matchesRarity && !user.desiredCards.find((card) => card.id == choice.id);
                 })
                 .slice(0, 25); // Limit results to 25
 
