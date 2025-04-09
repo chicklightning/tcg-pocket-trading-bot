@@ -70,7 +70,7 @@ const command = {
         }
 
         if (targetFilter && targetUser && targetUser.desiredCards && targetUser.desiredCards.length > 0) {
-            const filtered = targetUser.desiredCards
+            let filtered = targetUser.desiredCards
                 .filter(choice => {
                     const startsWith = choice.name.toLowerCase().startsWith(focusedValue);
                     let matchesRarity = true;
@@ -80,6 +80,20 @@ const command = {
                     return startsWith && matchesRarity;
                 })
                 .slice(0, 25); // Limit results to 25
+
+            // If user filter returns no cards, then show all cards (and filter where applicable)
+            if (filtered.length === 0) {
+                filtered = interaction.client.cardCache
+                    .filter(choice => {
+                        const startsWith = choice.name.toLowerCase().startsWith(focusedValue);
+                        let matchesRarity = true;
+                        if (otherCardRarity !== 0 && rarityFilter) {
+                            matchesRarity = (choice.rarity === otherCardRarity);
+                        }
+                        return startsWith && matchesRarity;
+                    })
+                    .slice(0, 25); // Limit results to 25
+            }
                 
             filteredList = filtered
                 .map(
