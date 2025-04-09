@@ -1,6 +1,6 @@
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
-import { Rarities, Sets, setupEmbed } from '../command-utilities.js';
-import { Models, getModel, getUser } from '../../database/database-utilities.js';
+import { setupEmbed } from '../command-utilities.js';
+import { Models, getModel } from '../../database/database-utilities.js';
 import { Op } from 'sequelize';
 
 const command = {

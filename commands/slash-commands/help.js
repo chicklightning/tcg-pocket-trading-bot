@@ -1,12 +1,15 @@
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { setupEmbed } from '../command-utilities.js';
 
+// TODO: Map command names to embeds, create help embeds and choices programmatically
 const addCardsCommand = '/add-cards';
 const removeCardsCommand = '/remove-cards';
 const getCardsCommand = '/get-cards';
 const startTradeCommand = '/start-trade';
 const getOpenTradesCommand = '/get-open-trades';
 const offerCardCommand = '/offer-card';
+const cancelTradeCommand = '/cancel-trade';
+const completeTradeCommand = '/complete-trade';
 
 const command = {
 	data: new SlashCommandBuilder()
