@@ -10,6 +10,6 @@ Built with [Node.js](https://nodejs.org/en), [discord.js](https://discord.js.org
 
 ---
 
-Thanks to pencerman for helping test and break the bot, and FroggyDecaf and Hopper for pushing me to build it!
+Thanks to pencerman for helping test and break the bot, and FroggyDecaf and Hopdog for pushing me to build it!
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/goobrielle)
