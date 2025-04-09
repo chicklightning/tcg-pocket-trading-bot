@@ -15,11 +15,11 @@ export default (sequelize, DataTypes) => {
     }
   }
   Trade.init({
-    desiredCardA: {
+    ownerOfferedCard: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    desiredCardB: {
+    targetOfferedCard: {
       type: DataTypes.STRING,
       allowNull: true,
     },

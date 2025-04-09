@@ -135,21 +135,29 @@ const command = {
         }
         else if (commandName === offerCardCommand) {
             embed = setupEmbed()
-                .setTitle(`Command Help: ${getOpenTradesCommand}`)
-                .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki/User-manual#get-open-trades')
-                .setDescription('This command lets you see your open (not completed) trades.')
+                .setTitle(`Command Help: ${offerCardCommand}`)
+                .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki/User-manual#offer-card')
+                .setDescription('TThis command lets you offer a card to a user you have started a trade with. You must start a trade (/start-trade) before offering a card.')
                 .addFields([
                     {
                         name: 'Target',
-                        value: 'You can specify a target and see if you have an open trade with this user. If you don\'t specify a target, you will see all of your open trades.'
+                        value: 'You must specify another user to send the offered card to. You can only send a card to a user you\'ve started a trade with.'
                     },
                     {
-                        name: 'Pagination',
-                        value: 'If there are more than 10 trades in the returned list, the response is paginated so you can scroll between pages in the list using the arrow buttons that appear at the bottom of the response. This will stop working after a period of time, so you can\'t go back to all old messages and scroll.'
+                        name: 'Autocomplete',
+                        value: 'For the card you want to offer, you can start typing the name of the card you want (like "sha" for "Shaymin") and a list of matching tradeable cards will appear. The list shown by default is the list of cards the other user wants if they have any, otherwise it will show the list of all cards. If the other user has already offered a card, the autocomplete options will be filtered to cards of a matching rarity from the other user\'s desired cards list if they have any, otherwise it will show all tradeable cards with a matching rarity.',
+                    },
+                    {
+                        name: 'Autocomplete filter',
+                        value: 'There is an optional "filter-cards" option; this is set to "True" by default so the autocomplete options are only from your target user\'s desired cards list. If you want autocomplete options to be any tradeable card, set this option to "False".',
+                    },
+                    {
+                        name: 'Weird autocomplete behavior',
+                        value: 'The filtering behavior here is weird depending on what order you enter the command options and what text is in the "card" option. Discord caches whatever autocomplete list you were shown FIRST when entering the command and you\'ll see this list whenever the "card" option has no text, even if you\'ve updated the filter or changed the target user. If you start typing, your autocomplete options will match the filter-option and filters described above.'
                     },
                     {
                         name: 'Error states',
-                        value: 'If you specify a target and do not have an open trade with them, the bot will let you know in the response.'
+                        value: 'If you don\'t have a trade open with this user, the bot will let you know in the response.'
                     },
                 ]);
         }

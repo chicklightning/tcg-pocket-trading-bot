@@ -8,7 +8,7 @@ export async function up(queryInterface, Sequelize) {
       autoIncrement: true,
       allowNull: false,
     },
-    desiredCardA: {
+    ownerOfferedCard: {
       type: Sequelize.STRING,
       allowNull: true,
       references: {
@@ -16,7 +16,7 @@ export async function up(queryInterface, Sequelize) {
         key: 'id',
       },
     },
-    desiredCardB: {
+    targetOfferedCard: {
       type: Sequelize.STRING,
       allowNull: true,
       references: {

@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { setupEmbed, Rarities } from '../command-utilities.js';
 import { Models, getModel } from '../../database/database-utilities.js';
 import { Op } from 'sequelize';
@@ -38,51 +38,56 @@ const generateEmbeds = async (tradesList, interaction, targetUser, start) => {
     let descriptionString = '';
     const cards = getModel(interaction.client.db, Models.Card);
     await Promise.all(current.map(async trade => {
-        const cardA = trade.desiredCardA !== null ? await cards.findByPk(trade.desiredCardA) : null;
-        const cardB = trade.desiredCardB !== null ? await cards.findByPk(trade.desiredCardB) : null;
+        const ownerOfferedCard = trade.ownerOfferedCard !== null ? await cards.findByPk(trade.ownerOfferedCard) : null;
+        const targetOfferedCard = trade.targetOfferedCard !== null ? await cards.findByPk(trade.targetOfferedCard) : null;
 
         if (targetUser) {
-            if (cardA) {
-                const cardOwner = trade.owner === interaction.user.id ? 'You\'re' : 'They\'re';
-                descriptionString += ` ${cardOwner} offering ${cardA.name} ${Rarities[cardA.rarity - 1]} from ${cardA.packSet} and `;
+            if (ownerOfferedCard) {
+                const cardOwner = trade.owner === interaction.user.id ? 'You\'re' : `<@${targetUser.id}> is`;
+                descriptionString += ` ${cardOwner} offering ${ownerOfferedCard.name} ${Rarities[ownerOfferedCard.rarity - 1]} from ${ownerOfferedCard.packSet} and `;
                 embed
                     .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki')
-                    .setImage(cardA.image);
+                    .setImage(ownerOfferedCard.image);
             }
             else {
-                const cardOwner = trade.owner === interaction.user.id ? 'You' : 'They';
-                descriptionString += `${cardOwner} have not offered a card and `;
+                const cardOwner = trade.owner === interaction.user.id ? 'You have' : `<@${targetUser.id}> has`;
+                descriptionString += `${cardOwner} not offered a card and `;
             }
             
-            if (cardB) {
-                const cardOwner = trade.target === interaction.user.id ? 'you\'re' : 'they\'re';
-                descriptionString += `${cardOwner} offering ${cardB.name} ${Rarities[cardB.rarity - 1]} from ${cardB.packSet}.\n`;
+            if (targetOfferedCard) {
+                const cardOwner = trade.target === interaction.user.id ? 'you\'re' : `<@${targetUser.id}> is`;
+                descriptionString += `${cardOwner} offering ${targetOfferedCard.name} ${Rarities[targetOfferedCard.rarity - 1]} from ${targetOfferedCard.packSet}.\n`;
 
-                // If two embeds are created with the same URL, Discord will aggregate the images from both into a single embed,
-                //   so let's show the card images since it's a single trade being shown
-                const secondEmbed = new EmbedBuilder()
-                    .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki')
-                    .setImage(cardB.image);
-                embeds.push(secondEmbed);
+                if (!ownerOfferedCard) {
+                    embed.setImage(targetOfferedCard.image);
+                }
+                else {
+                    // If two embeds are created with the same URL, Discord will aggregate the images from both into a single embed,
+                    //   so let's show the card images since it's a single trade being shown
+                    const secondEmbed = new EmbedBuilder()
+                        .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki')
+                        .setImage(targetOfferedCard.image);
+                    embeds.push(secondEmbed);
+                }
             }
             else {
-                const cardOwner = trade.target === interaction.user.id ? 'you' : 'they';
-                descriptionString += `${cardOwner} have not offered a card.\n`;
+                const cardOwner = trade.target === interaction.user.id ? 'you have' : `<@${targetUser.id}> has`;
+                descriptionString += `${cardOwner} not offered a card.\n`;
             }
         }
         else {
-            if (cardA) {
+            if (ownerOfferedCard) {
                 const cardOwner = trade.owner === interaction.user.id ? 'You have' : `<@${trade.owner}> has`;
-                descriptionString += `- ${cardOwner} offered [${cardA.name}](${cardA.image}) ${Rarities[cardA.rarity - 1]} from ${cardA.packSet} and `;
+                descriptionString += `- ${cardOwner} offered [${ownerOfferedCard.name}](${ownerOfferedCard.image}) ${Rarities[ownerOfferedCard.rarity - 1]} from ${ownerOfferedCard.packSet} and `;
             }
             else {
                 const cardOwner = trade.owner === interaction.user.id ? 'You have' : `<@${trade.owner}> has`;
                 descriptionString += `- ${cardOwner} not offered a card and `;
             }
             
-            if (cardB) {
+            if (targetOfferedCard) {
                 const cardOwner = trade.target === interaction.user.id ? 'you have' : `<@${trade.target}> has`;
-                descriptionString += `${cardOwner} offered [${cardB.name}](${cardB.image}) ${Rarities[cardB.rarity - 1]} from ${cardB.packSet}.\n`;
+                descriptionString += `${cardOwner} offered [${targetOfferedCard.name}](${targetOfferedCard.image}) ${Rarities[targetOfferedCard.rarity - 1]} from ${targetOfferedCard.packSet}.\n`;
             }
             else {
                 const cardOwner = trade.target === interaction.user.id ? 'you have' : `<@${trade.target}> has`;

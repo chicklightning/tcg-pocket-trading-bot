@@ -18,47 +18,99 @@ const command = {
 				.setAutocomplete(true)
 				.setRequired(true))
         .addBooleanOption(option =>
-            option.setName('filter-cards')
+            option.setName('filter-to-target')
                 .setDescription('Only show cards from the target user\'s desired cards list. ON by default.')
+                .setRequired(false))
+        .addBooleanOption(option =>
+            option.setName('filter-rarity')
+                .setDescription('If target user has offered a card, only show cards of matching rarity. ON by default.')
                 .setRequired(false)),
 	async autocomplete(interaction) {
 		const focusedValue = interaction.options.getFocused().toLowerCase();
 
-        // The filter is on by default - this is because Discord caches a copy of the first autocomplete
+        // The filters are on by default - this is because Discord caches a copy of the first autocomplete
         //   list sent when the focusedValue is empty, and we want the default list shown to be the
         //   taret user's desired cards if they have any; otherwise, we show all cards when the
-        //   focusValue updates (or if the filter is turned off)
-        const filterOption = interaction.options.getBoolean('filter-cards') ?? true;
+        //   focusValue updates (or if the filter are turned off)
+        const targetFilter = interaction.options.getBoolean('filter-to-target') ?? true;
+        const rarityFilter = interaction.options.getBoolean('filter-rarity') ?? true;
+        let otherCardRarity = 0;
+        let filteredList = [];
+        const target = interaction.options.get('target');
+        const targetUser = (target) ? await getUser(interaction.client, target.value, null) : null;
+        if (targetUser) {
+            // Get trade between users so we can see if we need to filter offered cards by rarity
+            const trades = getModel(interaction.client.db, Models.Trade);
+            const trade = await trades.findOne({
+                where: {
+                    isComplete: false,
+                    [Op.or]: [
+                        { owner: interaction.user.id, target: targetUser.id },
+                        { owner: targetUser.id, target: interaction.user.id },
+                    ],
+                },
+            });
 
-        if (filterOption) {
-            // We need to get this option by name, it hasn't resolved into a user yet and has limited information
-            const target = interaction.options.get('target');
+            if (trade) {
+                // Get the rarity of the card offered by the target user (if they've offered a card) so we can suggest cards of matching rarity
+                const cards = getModel(interaction.client.db, Models.Card);
+                let card = null;
+                if (interaction.user.id === trade.owner && trade.targetOfferedCard !== null && trade.targetOfferedCard !== '') {
+                    card = await cards.findByPk(trade.targetOfferedCard);
+                }
+                else if (trade.ownerOfferedCard !== null && trade.ownerOfferedCard !== '') {
+                    card = await cards.findByPk(trade.ownerOfferedCard);
+                }
 
-            if (target) {
-                const targetUser = await getUser(interaction.client, target.value, null);
-                if (targetUser.desiredCards && targetUser.desiredCards.length > 0) {
-                    const filtered = targetUser.desiredCards
-                        .filter(choice => choice.name.toLowerCase().startsWith(focusedValue))
-                        .slice(0, 25); // Limit results to 25
-
-                    return interaction.respond(filtered.map(
-                        choice => ({
-                            name: `${choice.name} ${Rarities[choice.rarity - 1]} from ${Sets[choice.packSet]}`,
-                            value: choice.id 
-                        })));
+                if (card) {
+                    otherCardRarity = card.rarity;
                 }
             }
+            // If a target is specified and there's no open trade found, the command will fail and the user will receive an error message
+        }
+
+        if (targetFilter && targetUser && targetUser.desiredCards && targetUser.desiredCards.length > 0) {
+            const filtered = targetUser.desiredCards
+                .filter(choice => {
+                    const startsWith = choice.name.toLowerCase().startsWith(focusedValue);
+                    let matchesRarity = true;
+                    if (otherCardRarity !== 0 && rarityFilter) {
+                        matchesRarity = (choice.rarity === otherCardRarity);
+                    }
+                    return startsWith && matchesRarity;
+                })
+                .slice(0, 25); // Limit results to 25
+                
+            filteredList = filtered
+                .map(
+                    choice => ({
+                        name: `${choice.name} ${Rarities[choice.rarity - 1]} from ${Sets[choice.packSet]}`,
+                        value: choice.id 
+                    }))
+                .sort();
+        }
+        else {
+            const filtered = interaction.client.cardCache
+                .filter(choice => {
+                    const startsWith = choice.name.toLowerCase().startsWith(focusedValue);
+                    let matchesRarity = true;
+                    if (otherCardRarity !== 0 && rarityFilter) {
+                        matchesRarity = (choice.rarity === otherCardRarity);
+                    }
+                    return startsWith && matchesRarity;
+                })
+                .slice(0, 25); // Limit results to 25
+
+            filteredList = filtered
+                .map(
+                    choice => ({
+                        name: `${choice.name} ${Rarities[choice.rarity - 1]} from ${Sets[choice.packSet]}`,
+                        value: choice.id 
+                    }))
+                .sort();
         }
         
-        const filtered = interaction.client.cardCache
-            .filter(choice => choice.id.toLowerCase().startsWith(focusedValue))
-            .slice(0, 25); // Limit results to 25
-        
-        return interaction.respond(filtered.map(
-            choice => ({
-                name: `${choice.name} ${Rarities[choice.rarity - 1]} from ${Sets[choice.packSet]}`,
-                value: choice.id 
-            })));
+        return interaction.respond(filteredList);
     },
 	async execute(interaction) {
         const targetUser = interaction.options.getUser('target');
@@ -102,16 +154,27 @@ const command = {
 
 		// Update the trade with the offered card
         if (interaction.user.id === trade.owner) {
-            trade.desiredCardA = cardId;
+            trade.ownerOfferedCard = cardId;
+
+            if (trade.targetOfferedCard !== null && trade.targetOfferedCard !== '') {
+                const otherCard = await cards.findByPk(trade.targetOfferedCard);
+                trade.isValid = card.rarity === otherCard.rarity;
+            }
         }
         else {
-            trade.desiredCardB = cardId;
+            trade.targetOfferedCard = cardId;
+
+            if (trade.ownerOfferedCard !== null && trade.ownerOfferedCard !== '') {
+                const otherCard = await cards.findByPk(trade.ownerOfferedCard);
+                trade.isValid = card.rarity === otherCard.rarity;
+            }
         }
+
         trade.save();
 
         const targetUserEmbed = setupEmbed()
             .setTitle(`${interaction.user.username} Has Offered You a Card`)
-            .setDescription(`${card.name} ${Rarities[card.rarity - 1]} from ${card.packSet} was offered.`)
+            .setDescription(`<@${interaction.user.id}> offered ${card.name} ${Rarities[card.rarity - 1]} from ${card.packSet}.`)
             .setImage(card.image);
 
 		targetUser.send({

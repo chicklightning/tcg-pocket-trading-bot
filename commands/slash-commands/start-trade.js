@@ -55,7 +55,7 @@ const command = {
             .setDescription(`You have started a trade with <@${targetUser.id}>.`);
 
 		const targetUserEmbed = setupEmbed().setTitle(`Trade Started by ${interaction.user.username}`)
-            .setDescription(`This user has started a trade with you.`);
+            .setDescription(`<@${interaction.user.id}> has started a trade with you.`);
 
 		targetUser.send({
 			embeds: [ targetUserEmbed ],
