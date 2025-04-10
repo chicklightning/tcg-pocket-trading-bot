@@ -102,7 +102,9 @@ const command = {
                         name: `${choice.name} ${Rarities[choice.rarity - 1]} from ${Sets[choice.packSet]}`,
                         value: choice.id 
                     }))
-                .sort((a, b) => a.name.localeCompare(b.name));
+                .sort((a, b) => {
+                    return (a.rarity === b.rarity) ? a.name.localeCompare(b.name) : a.rarity - b.rarity;
+                });
         }
         else {
             const filtered = interaction.client.cardCache
@@ -122,7 +124,9 @@ const command = {
                         name: `${choice.name} ${Rarities[choice.rarity - 1]} from ${Sets[choice.packSet]}`,
                         value: choice.id 
                     }))
-                .sort((a, b) => a.name.localeCompare(b.name));
+                .sort((a, b) => {
+                    return (a.rarity === b.rarity) ? a.name.localeCompare(b.name) : a.rarity - b.rarity;
+                });
         }
         
         return interaction.respond(filteredList);

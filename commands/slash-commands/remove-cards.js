@@ -1,6 +1,6 @@
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { Rarities, Sets, setupEmbed } from '../command-utilities.js';
-import { Models, getModel, getOrAddUser } from '../../database/database-utilities.js';
+import { Models, getModel, getUser } from '../../database/database-utilities.js';
 
 const command = {
 	data: new SlashCommandBuilder()
@@ -58,21 +58,37 @@ const command = {
 				.setAutocomplete(true)
 				.setRequired(false)),
 	async autocomplete(interaction) {
-        // TODO: Make an autocomplete utility function that filters the card cache based on the user's input
 		const focusedValue = interaction.options.getFocused().toLowerCase();
-        const filtered = interaction.client.cardCache
-            .filter(choice => choice.id.toLowerCase().startsWith(focusedValue))
-            .slice(0, 25); // Limit results to 25
-		await interaction.respond(
-			filtered.map(
-				choice => ({
-						name: `${choice.name} ${Rarities[choice.rarity - 1]} from ${Sets[choice.packSet]}`,
-						value: choice.id 
-					})),
-		);
+		const user = await getUser(interaction.client, interaction.user.id, interaction.user.username);
+		if (user) {
+			const filtered = user.desiredCards
+				.filter(choice => choice.id.toLowerCase().startsWith(focusedValue))
+				.slice(0, 25); // Limit results to 25
+
+			return interaction.respond(
+				filtered
+					.map(
+						choice => ({
+							name: `${choice.name} ${Rarities[choice.rarity - 1]} from ${Sets[choice.packSet]}`,
+							value: choice.id 
+						}))
+					.sort((a, b) => {
+						return (a.rarity === b.rarity) ? a.name.localeCompare(b.name) : a.rarity - b.rarity;
+					}),
+			);
+		}
+
+		// User has interacted with bot before, so they have no desired cards to remove
+		await interaction.respond([]);
 	},
 	async execute(interaction) {
-		let currentUser = await getOrAddUser(interaction.client, interaction.user.id, interaction.user.username);
+		let currentUser = await getUser(interaction.client, interaction.user.id, interaction.user.username);
+		if (!currentUser) {
+			return interaction.reply({
+                content: `You haven't added any cards to your desired cards list, try calling /add-cards.`,
+                flags: MessageFlags.Ephemeral,
+            });
+		}
 
 		const cardIds = [
 			interaction.options.getString('first-card'),
