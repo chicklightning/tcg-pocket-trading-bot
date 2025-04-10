@@ -56,16 +56,14 @@ export class DatabaseUtilities {
         let fetchedUser = await this.getUser(userId, userNickname);
         if (!fetchedUser) {
             const users = this.getModel(this.models.User);
-            await users.create({ id: userId, nickname: userNickname });
-            console.log(`[LOG] Created new user entry for ${userNickname} (${userId})`);
-
-            fetchedUser = await users.findOne({
-                where: { id: userId },
+            fetchedUser = await users.create({ id: userId, nickname: userNickname }, {
                 include: [{
                     model: this.getModel(this.models.Card),
                     as: 'desiredCards',
                 }],
             });
+            
+            console.log(`[LOG] Created new user entry for ${userNickname} (${userId})`);
         }
 
         return fetchedUser;

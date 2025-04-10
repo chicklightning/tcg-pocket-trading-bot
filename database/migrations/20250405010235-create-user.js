@@ -5,7 +5,8 @@ export async function up(queryInterface, Sequelize) {
     id: {
       allowNull: false,
       primaryKey: true,
-      type: Sequelize.STRING
+      type: Sequelize.STRING,
+      unique: true,
     },
     nickname: {
       type: Sequelize.STRING

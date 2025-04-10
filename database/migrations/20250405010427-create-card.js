@@ -5,7 +5,8 @@ export async function up(queryInterface, Sequelize) {
     id: {
       allowNull: false,
       primaryKey: true,
-      type: Sequelize.STRING
+      type: Sequelize.STRING,
+      unique: true,
     },
     name: {
       type: Sequelize.STRING,
@@ -25,11 +26,11 @@ export async function up(queryInterface, Sequelize) {
     },
     createdAt: {
       allowNull: false,
-      type: Sequelize.DATE
+      type: Sequelize.DATE,
     },
     updatedAt: {
       allowNull: false,
-      type: Sequelize.DATE
+      type: Sequelize.DATE,
     }
   });
 };
