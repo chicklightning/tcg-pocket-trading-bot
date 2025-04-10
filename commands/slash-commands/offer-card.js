@@ -59,7 +59,7 @@ const command = {
                 if (interaction.user.id === trade.owner && trade.targetOfferedCard !== null && trade.targetOfferedCard !== '') {
                     card = await cards.findByPk(trade.targetOfferedCard);
                 }
-                else if (trade.ownerOfferedCard !== null && trade.ownerOfferedCard !== '') {
+                else if (interaction.user.id !== trade.owner && trade.ownerOfferedCard !== null && trade.ownerOfferedCard !== '') {
                     card = await cards.findByPk(trade.ownerOfferedCard);
                 }
 
