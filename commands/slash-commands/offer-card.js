@@ -80,7 +80,10 @@ const command = {
                     }
                     return startsWith && matchesRarity && !user.desiredCards.find((card) => card.id == choice.id);
                 })
-                .slice(0, 25); // Limit results to 25
+                .slice(0, 25) // Limit results to 25
+                .sort((a, b) => {
+                    return (a.rarity === b.rarity) ? a.name.localeCompare(b.name) : a.rarity - b.rarity;
+                });
 
             // If user filter returns no cards, then show all cards (and filter where applicable)
             if (filtered.length === 0) {
@@ -93,7 +96,10 @@ const command = {
                         }
                         return startsWith && matchesRarity && !user.desiredCards.find((card) => card.id == choice.id);
                     })
-                    .slice(0, 25); // Limit results to 25
+                    .slice(0, 25) // Limit results to 25
+                    .sort((a, b) => {
+						return (a.rarity === b.rarity) ? a.name.localeCompare(b.name) : a.rarity - b.rarity;
+					});
             }
                 
             filteredList = filtered
@@ -116,17 +122,17 @@ const command = {
                     }
                     return startsWith && matchesRarity && !user.desiredCards.find((card) => card.id == choice.id);
                 })
-                .slice(0, 25); // Limit results to 25
+                .slice(0, 25) // Limit results to 25
+                .sort((a, b) => {
+                    return (a.rarity === b.rarity) ? a.name.localeCompare(b.name) : a.rarity - b.rarity;
+                });
 
             filteredList = filtered
                 .map(
                     choice => ({
                         name: `${choice.name} ${Rarities[choice.rarity - 1]} from ${Sets[choice.packSet]}`,
                         value: choice.id 
-                    }))
-                .sort((a, b) => {
-                    return (a.rarity === b.rarity) ? a.name.localeCompare(b.name) : a.rarity - b.rarity;
-                });
+                    }));
         }
         
         return interaction.respond(filteredList);

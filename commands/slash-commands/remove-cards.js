@@ -63,7 +63,10 @@ const command = {
 		if (user) {
 			const filtered = user.desiredCards
 				.filter(choice => choice.id.toLowerCase().startsWith(focusedValue))
-				.slice(0, 25); // Limit results to 25
+				.slice(0, 25) // Limit results to 25
+				.sort((a, b) => {
+					return (a.rarity === b.rarity) ? a.name.localeCompare(b.name) : a.rarity - b.rarity;
+				});
 
 			return interaction.respond(
 				filtered
@@ -71,10 +74,7 @@ const command = {
 						choice => ({
 							name: `${choice.name} ${Rarities[choice.rarity - 1]} from ${Sets[choice.packSet]}`,
 							value: choice.id 
-						}))
-					.sort((a, b) => {
-						return (a.rarity === b.rarity) ? a.name.localeCompare(b.name) : a.rarity - b.rarity;
-					}),
+						})),
 			);
 		}
 
