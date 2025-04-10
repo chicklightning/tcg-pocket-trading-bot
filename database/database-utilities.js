@@ -1,78 +1,86 @@
 import { Op } from 'sequelize'; 
 
-export const Models = {
-    User: 'User',
-    Card: 'Card',
-    Trade: 'Trade',
-};
+export class DatabaseUtilities {
+    constructor(database) {
+        if (!database) {
+            throw new Error('A database instance must be provided.');
+        }
 
-export function getModel(database, modelEnum) {
-    if (!database || !modelEnum) {
-        throw new Error('Database and model enum value must be provided.');
-    }
-    const model = database[Models[modelEnum]];
-    if (!model) {
-        throw new Error(`Model ${modelEnum} not found in the database.`);
-    }
-    return model;
-};
-
-export async function getUser(client, userId, userNickname) {
-    if (!client || !userId) {
-        throw new Error('Client and userId must be provided.');
+        this.database = database;
+        this.models = {
+            User: 'User',
+            Card: 'Card',
+            Trade: 'Trade',
+        };
     }
 
-    const users = getModel(client.db, Models.User);
-    let fetchedUser = await users.findOne({
-      where: { id: userId },
-      include: [{
-          model: getModel(client.db, Models.Card),
-          as: 'desiredCards',
-      }],
-    });
-
-    if (fetchedUser && userNickname && fetchedUser.nickname !== userNickname) {
-        fetchedUser.nickname = userNickname;
-        await fetchedUser.save();
-        console.log(`[LOG] Updated nickname for user ${userId} to ${userNickname}`);
+    getModel(modelEnum) {
+        if (!modelEnum) {
+            throw new Error('Model enum value must be provided.');
+        }
+        const model = this.database[this.models[modelEnum]];
+        if (!model) {
+            throw new Error(`Model ${modelEnum} not found in the database.`);
+        }
+        return model;
     }
 
-    return fetchedUser;
-};
+    async getUser(userId, userNickname) {
+        if (!userId) {
+            throw new Error('userId must be provided.');
+        }
 
-export async function getOrAddUser(client, userId, userNickname) {
-    if (!client || !userId) {
-        throw new Error('Client and userId must be provided.');
+        const users = this.getModel(this.models.User);
+        let fetchedUser = await users.findOne({
+            where: { id: userId },
+            include: [{
+                model: this.getModel(this.models.Card),
+                as: 'desiredCards',
+            }],
+        });
+
+        if (fetchedUser && userNickname && fetchedUser.nickname !== userNickname) {
+            fetchedUser.nickname = userNickname;
+            await fetchedUser.save();
+            console.log(`[LOG] Updated nickname for user ${userId} to ${userNickname}`);
+        }
+
+        return fetchedUser;
     }
 
-    let fetchedUser = await getUser(client, userId, userNickname);
-    if (!fetchedUser) {
-        const users = getModel(client.db, Models.User);
-        await users.create({ id: userId, nickname: userNickname });
-        console.log(`[LOG] Created new user entry for ${userNickname} (${userId})`);
+    async getOrAddUser(userId, userNickname) {
+        if (!userId) {
+            throw new Error('userId must be provided.');
+        }
 
-        fetchedUser = await users.findOne({
-          where: { id: userId },
-          include: [{
-              model: getModel(client.db, Models.Card),
-              as: 'desiredCards',
-          }],
+        let fetchedUser = await this.getUser(userId, userNickname);
+        if (!fetchedUser) {
+            const users = this.getModel(this.models.User);
+            await users.create({ id: userId, nickname: userNickname });
+            console.log(`[LOG] Created new user entry for ${userNickname} (${userId})`);
+
+            fetchedUser = await users.findOne({
+                where: { id: userId },
+                include: [{
+                    model: this.getModel(this.models.Card),
+                    as: 'desiredCards',
+                }],
+            });
+        }
+
+        return fetchedUser;
+    }
+
+    async getOpenTradeForUsers(userIdA, userIdB) {
+        const trades = this.getModel(this.models.Trade);
+        return await trades.findOne({
+            where: {
+                isComplete: false,
+                [Op.or]: [
+                    { owner: userIdA, target: userIdB },
+                    { owner: userIdB, target: userIdA },
+                ],
+            },
         });
     }
-
-    return fetchedUser;
-};
-
-export async function getOpenTradeForUsers(db, userIdA, userIdB) {
-    // Check if there is an ongoing trade between the two users
-    const trades = getModel(db, Models.Trade);
-    return await trades.findOne({
-        where: {
-            isComplete: false,
-            [Op.or]: [
-                { owner: userIdA, target: userIdB },
-                { owner: userIdB, target: userIdA },
-            ],
-        },
-    });
 };

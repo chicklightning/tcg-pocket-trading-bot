@@ -1,6 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { ephemeralErrorReply, Rarities, Sets, setupEmbed, TargetUserOptionName } from '../command-utilities.js';
-import { getUser } from '../../database/database-utilities.js';
 
 const rarityFilterOptionName = 'rarity';
 const setFilterOptionName = 'set';
@@ -108,14 +107,16 @@ const command = {
         const setFilter = interaction.options.getString(setFilterOptionName) ?? ''; // '' means no filter
         const userOption = interaction.options.getUser(TargetUserOptionName);
         const visibility = interaction.options.getBoolean(visibilityOptionName) ?? false;
-		const targetUser = await getUser(interaction.client, userOption?.id ?? interaction.user.id, userOption?.username ?? interaction.user.username);
+
+        const db = interaction.client.database;
+		const targetUser = await db.getUser(userOption?.id ?? interaction.user.id, userOption?.username ?? interaction.user.username);
 
         if (targetUser && targetUser.desiredCards && targetUser.desiredCards.length > 0) {
             const filterDesiredCards = interaction.options.getBoolean(filterCallerCardsOptionName) ?? false;
             let user = null;
 
             if (targetUser.id !== interaction.user.id && filterDesiredCards) {
-                user = await getUser(interaction.client, interaction.user.id, interaction.user.username);
+                user = await db.getUser(interaction.user.id, interaction.user.username);
             }
 
             // Sort the desired cards by rarity (ascending) and then by name (alphabetically)

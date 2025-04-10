@@ -1,6 +1,5 @@
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { AddRemoveOptionNames, ephemeralErrorReply, generateAutocompleteOptions, Rarities, setupEmbed } from '../command-utilities.js';
-import { Models, getModel, getUser } from '../../database/database-utilities.js';
 
 const command = {
 	data: (() => {
@@ -22,18 +21,20 @@ const command = {
 			return builder;
 		})(),
 	async autocomplete(interaction) {
+		const db = interaction.client.database;
 		const focusedValue = interaction.options.getFocused().toLowerCase();
-		const user = await getUser(interaction.client, interaction.user.id, interaction.user.username);
+		const user = await db.getUser(interaction.user.id, interaction.user.username);
 		if (user) {
 			const filterFn = (choice, focusedValue) => choice.id.toLowerCase().startsWith(focusedValue);
-			await interaction.respond(generateAutocompleteOptions(user.desiredCards, filterFn, focusedValue));
+			return interaction.respond(generateAutocompleteOptions(user.desiredCards, filterFn, focusedValue));
 		}
 
 		// User has interacted with bot before, so they have no desired cards to remove
 		await interaction.respond([]);
 	},
 	async execute(interaction) {
-		let currentUser = await getUser(interaction.client, interaction.user.id, interaction.user.username);
+		const db = interaction.client.database;
+		let currentUser = await db.getUser(interaction.user.id, interaction.user.username);
 		if (!currentUser) {
 			return ephemeralErrorReply(interaction, 'You haven\'t added any cards to your desired cards list, have you called /add-cards?');
 		}
@@ -51,7 +52,7 @@ const command = {
 
         const embed = setupEmbed().setTitle(`Cards Removed by ${currentUser.nickname}`);
 
-		const cards = getModel(interaction.client.db, Models.Card);
+		const cards = db.getModel(db.models.Card);
         let descriptionString = '';
 
 		const removeCardPromises = cardIdsWithCount.map(async ({ name: cardId, count: countToRemove }) => {

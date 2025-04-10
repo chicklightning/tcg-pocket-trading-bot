@@ -1,6 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { ephemeralErrorReply, setupEmbed, Rarities, TargetUserOptionName } from '../command-utilities.js';
-import { Models, getModel, getOpenTradeForUsers } from '../../database/database-utilities.js';
 import { Op } from 'sequelize';
 
 const backId = 'back'
@@ -36,7 +35,8 @@ const generateEmbeds = async (tradesList, interaction, targetUser, start) => {
     embeds.push(embed);
 
     let descriptionString = '';
-    const cards = getModel(interaction.client.db, Models.Card);
+    const db = interaction.client.database;
+    const cards = db.getModel(db.models.Card);
     await Promise.all(current.map(async trade => {
         const ownerOfferedCard = trade.ownerOfferedCard !== null ? await cards.findByPk(trade.ownerOfferedCard) : null;
         const targetOfferedCard = trade.targetOfferedCard !== null ? await cards.findByPk(trade.targetOfferedCard) : null;
@@ -118,9 +118,10 @@ const command = {
 	async execute(interaction) {
 		const targetUser = interaction.options.getUser(TargetUserOptionName);
         let tradesList = {};
+        const db = interaction.client.database;
         if (targetUser) {
             // Check if there is an ongoing trade between the two users
-            const existingTrade = await getOpenTradeForUsers(interaction.client.db, interaction.user.id, targetUser.id);
+            const existingTrade = await db.getOpenTradeForUsers(interaction.user.id, targetUser.id);
             if (!existingTrade) {
                 return ephemeralErrorReply(interaction, `No open trade exists between you and ${targetUser.username}.`);
             }
@@ -128,7 +129,7 @@ const command = {
             tradesList = [ existingTrade ];
         }
         else {
-            const trades = getModel(interaction.client.db, Models.Trade);
+            const trades = db.getModel(db.models.Trade);
             tradesList = await trades.findAll({
                 where: {
                     isComplete: false,

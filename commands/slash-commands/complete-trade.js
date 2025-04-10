@@ -1,6 +1,5 @@
 import { MessageFlags } from 'discord.js';
 import { ephemeralErrorReply, Rarities, setupEmbed, setupTargetUserCommand, TargetUserOptionName } from '../command-utilities.js';
-import { Models, getModel, getUser, getOpenTradeForUsers } from '../../database/database-utilities.js';
 
 const command = {
 	data: setupTargetUserCommand('The user you want to complete the trade with.')
@@ -18,7 +17,8 @@ const command = {
         }
 
         // Check if there is an ongoing trade between the two users
-        const trade = await getOpenTradeForUsers(interaction.client.db, interaction.user.id, targetUser.id);
+        const db = interaction.client.database;
+        const trade = await db.getOpenTradeForUsers(interaction.user.id, targetUser.id);
         if (!trade) {
             return ephemeralErrorReply(interaction, `No open trade exists between you and ${targetUser.username}. Did you forget to call /start-trade?`);
         }
@@ -32,8 +32,8 @@ const command = {
         }
 
         // If offered card was on a user's desired cards list, then remove a count from the list or destroy the record
-        const target = await getUser(interaction.client, targetUser.id, targetUser.username);
-		const user = await getUser(interaction.client, interaction.user.id, interaction.user.username);
+        const target = await db.getUser(targetUser.id, targetUser.username);
+		const user = await db.getUser(interaction.user.id, interaction.user.username);
 
         // Get each user's desired cards list, remove the traded card from their list if it exists then mark the trade as complete
         // If the calling user is the trade owner, look at the target's offered card, otherwise look at the owner offered card
@@ -89,7 +89,7 @@ const command = {
 
         const targetUserEmbed2 = setupEmbed().setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki');
 
-        const cards = getModel(interaction.client.db, Models.Card);
+        const cards = db.getModel(db.models.Card);
         const callingUserCardReceived = await cards.findByPk(callingUserCardReceivedId);
         if (callingUserCardReceived) {
             embed1

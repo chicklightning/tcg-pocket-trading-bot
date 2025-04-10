@@ -1,6 +1,5 @@
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { AddRemoveOptionNames, ephemeralErrorReply, generateAutocompleteOptions, Rarities, setupEmbed } from '../command-utilities.js';
-import { Models, getModel, getOrAddUser } from '../../database/database-utilities.js';
 
 const command = {
 	data: (() => {
@@ -27,7 +26,8 @@ const command = {
 		await interaction.respond(generateAutocompleteOptions(interaction.client.cardCache, filterFn, focusedValue));
 	},
 	async execute(interaction) {
-		let currentUser = await getOrAddUser(interaction.client, interaction.user.id, interaction.user.username);
+		const db = interaction.client.database;
+		let currentUser = await db.getOrAddUser(interaction.user.id, interaction.user.username);
 		if (!currentUser) {
 			return ephemeralErrorReply(interaction, 'Sorry, something went wrong. Please contact the bot\'s admin to let them know.');
 		}
@@ -45,7 +45,7 @@ const command = {
 
 		const embed = setupEmbed().setTitle(`Cards Added by ${currentUser.nickname}`);
 
-		const cards = getModel(interaction.client.db, Models.Card);
+		const cards = db.getModel(db.models.Card);
 		let descriptionString = '';
 		const addCardPromises = cardIdsWithCount.map(async ({ name: cardId, count: countToAdd }) => {
 			const card = await cards.findByPk(cardId);

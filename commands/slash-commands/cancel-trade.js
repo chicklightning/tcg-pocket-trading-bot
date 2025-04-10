@@ -1,6 +1,5 @@
 import { MessageFlags } from 'discord.js';
 import { ephemeralErrorReply, setupEmbed, setupTargetUserCommand, TargetUserOptionName } from '../command-utilities.js';
-import { getOpenTradeForUsers } from '../../database/database-utilities.js';
 
 const command = {
 	data: setupTargetUserCommand('The user you want to cancel the trade with.')
@@ -16,7 +15,8 @@ const command = {
         }
 
         // Check if there is an ongoing trade between the two users
-        const trade = await getOpenTradeForUsers(interaction.client.db, interaction.user.id, targetUser.id);
+        const db = interaction.client.database;
+        const trade = await db.getOpenTradeForUsers(interaction.user.id, targetUser.id);
         if (!trade) {
             return ephemeralErrorReply(interaction, `No open trade exists between you and ${targetUser.username}.`);
         }

@@ -1,6 +1,5 @@
 import { MessageFlags } from 'discord.js';
 import { ephemeralErrorReply, generateAutocompleteOptions, Rarities, setupEmbed, setupTargetUserCommand, TargetUserOptionName } from '../command-utilities.js';
-import { Models, getModel, getOpenTradeForUsers, getUser } from '../../database/database-utilities.js';
 
 const cardOptionName = 'card';
 const targetFilterOptionName = 'filter-to-target';
@@ -35,14 +34,16 @@ const command = {
         let otherCardRarity = 0;
         let filteredList = [];
         const target = interaction.options.get(TargetUserOptionName);
-        const targetUser = (target) ? await getUser(interaction.client, target.value, null) : null;
-        const user = await getUser(interaction.client, interaction.user.id, interaction.user.username);
+
+        const db = interaction.client.database;
+        const targetUser = (target) ? await db.getUser(target.value, null) : null;
+        const user = await db.getUser(interaction.user.id, interaction.user.username);
         if (targetUser) {
             // Get trade between users so we can see if we need to filter offered cards by rarity
-            const trade = await getOpenTradeForUsers(interaction.client.db, interaction.user.id, targetUser.id);
+            const trade = await db.getOpenTradeForUsers(interaction.user.id, targetUser.id);
             if (trade) {
                 // Get the rarity of the card offered by the interaction target user (if they've offered a card) so we can suggest cards of matching rarity
-                const cards = getModel(interaction.client.db, Models.Card);
+                const cards = db.getModel(db.models.Card);
                 let card = null;
                 if (interaction.user.id === trade.owner && trade.targetOfferedCard !== null && trade.targetOfferedCard !== '') {
                     card = await cards.findByPk(trade.targetOfferedCard);
@@ -98,13 +99,14 @@ const command = {
         }
 
         // Check if there is an ongoing trade between the two users
-        const trade = await getOpenTradeForUsers(interaction.client.db, interaction.user.id, targetUser.id);
+        const db = interaction.client.database;
+        const trade = await db.getOpenTradeForUsers(interaction.user.id, targetUser.id);
         if (!trade) {
             return ephemeralErrorReply(interaction, `No open trade exists between you and ${targetUser.username}. Did you forget to call /start-trade?`);
         }
 
         // Make sure the card exists
-        const cards = getModel(interaction.client.db, Models.Card);
+        const cards = db.getModel(db.models.Card);
         const cardId = interaction.options.getString(cardOptionName).trim();
         const card = (cardId !== '') ? await cards.findByPk(cardId) : null;
         if (!card) {
