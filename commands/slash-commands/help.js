@@ -143,7 +143,7 @@ const offerCardEmbed = setupEmbed()
         },
         {
             name: 'Weird autocomplete behavior',
-            value: 'The filtering behavior here is weird depending on what order you enter the command options and what text is in the "card" option. Discord caches whatever autocomplete list you were shown FIRST when entering the command and you\'ll see this list whenever the "card" option has text you\'ve entered before (like an empty "card" text box or just the letter "s"), even if you\'ve updated the filter or changed the target user. If you start typing more of your query, your autocomplete options will match the options you expect to see from the filters you have turned on or off. This is unfortunately behavior I cannot change.\n\nIf your autocomplete options stop matching what you expect to see, restart typing the command.'
+            value: 'The filtering behavior here is weird depending on what order you enter the command options and what text is in the "card" option. Discord caches whatever autocomplete list you were shown FIRST when entering the command and you\'ll see this list whenever the "card" option has text you\'ve entered before (like an empty "card" text box or just the letter "s"), even if you\'ve updated the filter or changed the target user. If you start typing more of your query, your autocomplete options will match the options you expect to see from the filters you have turned on or off. This is unfortunately behavior I cannot change.\n\nIf your autocomplete options stop matching what you expect to see, restart typing the command. If you want to change the filter options, try setting them FIRST then selecting the target, then the card.'
         },
         {
             name: 'Error states',
