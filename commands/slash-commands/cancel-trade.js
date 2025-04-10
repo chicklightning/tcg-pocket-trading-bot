@@ -1,5 +1,5 @@
 import { MessageFlags } from 'discord.js';
-import { setupEmbed, setupTargetUserCommand, TargetUserOptionName } from '../command-utilities.js';
+import { ephemeralErrorReply, setupEmbed, setupTargetUserCommand, TargetUserOptionName } from '../command-utilities.js';
 import { getOpenTradeForUsers } from '../../database/database-utilities.js';
 
 const command = {
@@ -8,28 +8,17 @@ const command = {
         .setDescription('Cancels a trade you\'ve started with another user.'),
 	async execute(interaction) {
         const targetUser = interaction.options.getUser(TargetUserOptionName);
-
         if (targetUser.id === interaction.client.user.id) {
-            return interaction.reply({
-                content: `You can't cancel a trade with me.`,
-                flags: MessageFlags.Ephemeral,
-            });
+            return ephemeralErrorReply(interaction, 'You can\'t cancel a trade with me.');
         }
-
 		if (targetUser.id === interaction.user.id) {
-            return interaction.reply({
-                content: `You can't cancel a trade with yourself.`,
-                flags: MessageFlags.Ephemeral,
-            });
+            return ephemeralErrorReply(interaction, 'You can\'t cancel a trade with yourself.');
         }
 
         // Check if there is an ongoing trade between the two users
         const trade = await getOpenTradeForUsers(interaction.client.db, interaction.user.id, targetUser.id);
         if (!trade) {
-            return interaction.reply({
-                content: `No open trade exists between you and ${targetUser.username}.`,
-                flags: MessageFlags.Ephemeral,
-            });
+            return ephemeralErrorReply(interaction, `No open trade exists between you and ${targetUser.username}.`);
         }
 
         await trade.destroy();

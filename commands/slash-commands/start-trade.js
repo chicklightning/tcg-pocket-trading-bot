@@ -1,5 +1,5 @@
 import { MessageFlags } from 'discord.js';
-import { setupEmbed, setupTargetUserCommand, TargetUserOptionName } from '../command-utilities.js';
+import { ephemeralErrorReply, setupEmbed, setupTargetUserCommand, TargetUserOptionName } from '../command-utilities.js';
 import { getModel, getOrAddUser, getOpenTradeForUsers, Models } from '../../database/database-utilities.js';
 
 const command = {
@@ -10,26 +10,17 @@ const command = {
         const targetUser = interaction.options.getUser(TargetUserOptionName);
 
         if (targetUser.id === interaction.user.id) {
-            return interaction.reply({
-                content: `You can't start a trade with yourself.`,
-                flags: MessageFlags.Ephemeral,
-            });
+            return ephemeralErrorReply(interaction, 'You can\'t start a trade with yourself.');
         }
 
         if (targetUser.id === interaction.client.user.id) {
-            return interaction.reply({
-                content: `You can't start a trade with me.`,
-                flags: MessageFlags.Ephemeral,
-            });
+            return ephemeralErrorReply(interaction, 'You can\'t start a trade with me.');
         }
 
         // Check if there is an ongoing trade between the two users
         const existingTrade = await getOpenTradeForUsers(interaction.client.db, interaction.user.id, targetUser.id);
         if (existingTrade) {
-            return interaction.reply({
-                content: `There is already an ongoing trade between you and ${targetUser.username}. Complete this trade before starting a new one.`,
-                flags: MessageFlags.Ephemeral,
-            });
+            return ephemeralErrorReply(interaction, `There is already an ongoing trade between you and ${targetUser.username}. Complete this trade before starting a new one.`);
         }
 
 		// If the users don't exist in the database, create an entry for them
@@ -37,10 +28,7 @@ const command = {
 		const newUser2 = await getOrAddUser(interaction.client, interaction.user.id, interaction.user.username);
 
         if (!newUser1 || !newUser2) {
-			return interaction.reply({
-                content: `Sorry, something went wrong. Please contact the bot's admin to let them know.`,
-                flags: MessageFlags.Ephemeral,
-            });
+            return ephemeralErrorReply(interaction, 'Sorry, something went wrong. Please contact the bot\'s admin to let them know.');
 		}
 
         // Create a new trade

@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
-import { setupEmbed, Rarities, TargetUserOptionName } from '../command-utilities.js';
+import { ephemeralErrorReply, setupEmbed, Rarities, TargetUserOptionName } from '../command-utilities.js';
 import { Models, getModel, getOpenTradeForUsers } from '../../database/database-utilities.js';
 import { Op } from 'sequelize';
 
@@ -122,10 +122,7 @@ const command = {
             // Check if there is an ongoing trade between the two users
             const existingTrade = await getOpenTradeForUsers(interaction.client.db, interaction.user.id, targetUser.id);
             if (!existingTrade) {
-                return interaction.reply({
-                    content: `No open trade exists between you and ${targetUser.username}.`,
-                    flags: MessageFlags.Ephemeral,
-                });
+                return ephemeralErrorReply(interaction, `No open trade exists between you and ${targetUser.username}.`);
             }
 
             tradesList = [ existingTrade ];

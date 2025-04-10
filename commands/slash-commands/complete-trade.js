@@ -1,5 +1,5 @@
 import { MessageFlags } from 'discord.js';
-import { Rarities, setupEmbed, setupTargetUserCommand, TargetUserOptionName } from '../command-utilities.js';
+import { ephemeralErrorReply, Rarities, setupEmbed, setupTargetUserCommand, TargetUserOptionName } from '../command-utilities.js';
 import { Models, getModel, getUser, getOpenTradeForUsers } from '../../database/database-utilities.js';
 
 const command = {
@@ -10,40 +10,25 @@ const command = {
         const targetUser = interaction.options.getUser(TargetUserOptionName);
 
 		if (targetUser.id === interaction.user.id) {
-            return interaction.reply({
-                content: `You can't complete a trade with yourself.`,
-                flags: MessageFlags.Ephemeral,
-            });
+            return ephemeralErrorReply(interaction, 'You can\'t complete a trade with yourself.');
         }
 
         if (targetUser.id === interaction.client.user.id) {
-            return interaction.reply({
-                content: `You can't complete a trade with me.`,
-                flags: MessageFlags.Ephemeral,
-            });
+            return ephemeralErrorReply(interaction, 'You can\'t complete a trade with me.');
         }
 
         // Check if there is an ongoing trade between the two users
         const trade = await getOpenTradeForUsers(interaction.client.db, interaction.user.id, targetUser.id);
         if (!trade) {
-            return interaction.reply({
-                content: `No open trade exists between you and ${targetUser.username}. Did you forget to call /start-trade?`,
-                flags: MessageFlags.Ephemeral,
-            });
+            return ephemeralErrorReply(interaction, `No open trade exists between you and ${targetUser.username}. Did you forget to call /start-trade?`);
         }
 
         if (trade.ownerOfferedCard === null || trade.ownerOfferedCard === '' || trade.targetOfferedCard === null || trade.targetOfferedCard === '') {
-            return interaction.reply({
-                content: `Both users must offer a card to complete the trade.`,
-                flags: MessageFlags.Ephemeral,
-            });
+            return ephemeralErrorReply(interaction, 'Both users must offer a card to complete the trade.');
         }
 
         if (!trade.isValid) {
-            return interaction.reply({
-                content: `Both users must offer a card of the same rarity to complete the trade.`,
-                flags: MessageFlags.Ephemeral,
-            });
+            return ephemeralErrorReply(interaction, 'Both users must offer a card of the same rarity to complete the trade.');
         }
 
         // If offered card was on a user's desired cards list, then remove a count from the list or destroy the record
@@ -152,12 +137,12 @@ const command = {
             }
             else {
                 // Log kept here for debugging but this is expected behavior, users may trade cards they don't need (aka have in their desired cards list)
-                // console.log(`[LOG] Card ${userCard.UserCard.card_id} not found in desired cards list for user ${target.nickname} (${target.id}).`);
+                // console.debug(`[DEBUG] Card ${userCard.UserCard.card_id} not found in desired cards list for user ${target.nickname} (${target.id}).`);
             }
         }
         else {
             // Log kept here for debugging but this is expected behavior, users may trade cards they don't need (aka have in their desired cards list)
-            // console.log(`[LOG] Card ${userCard.UserCard.card_id} not found in desired cards list for user ${target.nickname} (${target.id}).`);
+            // console.debug(`[DEBUG] Card ${userCard.UserCard.card_id} not found in desired cards list for user ${target.nickname} (${target.id}).`);
         }
 
         const targetUserCardReceived = await cards.findByPk(targetUserCardReceivedId);

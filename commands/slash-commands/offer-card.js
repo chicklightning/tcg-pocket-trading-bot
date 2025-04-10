@@ -1,5 +1,5 @@
 import { MessageFlags } from 'discord.js';
-import { Rarities, Sets, setupEmbed, setupTargetUserCommand, TargetUserOptionName } from '../command-utilities.js';
+import { ephemeralErrorReply, Rarities, Sets, setupEmbed, setupTargetUserCommand, TargetUserOptionName } from '../command-utilities.js';
 import { Models, getModel, getOpenTradeForUsers, getUser } from '../../database/database-utilities.js';
 
 const cardOptionName = 'card';
@@ -109,19 +109,13 @@ const command = {
         const targetUser = interaction.options.getUser(TargetUserOptionName);
 
 		if (targetUser.id === interaction.user.id) {
-            return interaction.reply({
-                content: `You can't offer yourself a card to trade.`,
-                flags: MessageFlags.Ephemeral,
-            });
+            return ephemeralErrorReply(interaction, 'You can\'t offer yourself a card to trade.');
         }
 
         // Check if there is an ongoing trade between the two users
         const trade = await getOpenTradeForUsers(interaction.client.db, interaction.user.id, targetUser.id);
         if (!trade) {
-            return interaction.reply({
-                content: `No open trade exists between you and ${targetUser.username}. Did you forget to call /start-trade?`,
-                flags: MessageFlags.Ephemeral,
-            });
+            return ephemeralErrorReply(interaction, `No open trade exists between you and ${targetUser.username}. Did you forget to call /start-trade?`);
         }
 
         // Make sure the card exists
@@ -129,10 +123,7 @@ const command = {
         const cardId = interaction.options.getString(cardOptionName).trim();
         const card = (cardId !== '') ? await cards.findByPk(cardId) : null;
         if (!card) {
-            return interaction.reply({
-                content: `The card you specified does not exist.`,
-                flags: MessageFlags.Ephemeral,
-            });
+            return ephemeralErrorReply(interaction, 'The card you specified does not exist.');
         }
 
 		// Update the trade with the offered card

@@ -1,4 +1,4 @@
-import { EmbedBuilder, InteractionContextType, SlashCommandBuilder } from 'discord.js';
+import { EmbedBuilder, InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
 
 export const AddRemoveOptionNames = [
 	'first-card',
@@ -23,6 +23,13 @@ export const Sets = {
 };
 
 export const TargetUserOptionName = 'target';
+
+export async function ephemeralErrorReply(interaction, message) {
+	return interaction.reply({
+		content: message,
+		flags: MessageFlags.Ephemeral,
+	});
+};
 
 export function setupEmbed() {
 	return new EmbedBuilder()

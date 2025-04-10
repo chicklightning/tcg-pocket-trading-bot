@@ -1,5 +1,5 @@
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
-import { AddRemoveOptionNames, Rarities, Sets, setupEmbed } from '../command-utilities.js';
+import { AddRemoveOptionNames, ephemeralErrorReply, Rarities, Sets, setupEmbed } from '../command-utilities.js';
 import { Models, getModel, getUser } from '../../database/database-utilities.js';
 
 const command = {
@@ -48,10 +48,7 @@ const command = {
 	async execute(interaction) {
 		let currentUser = await getUser(interaction.client, interaction.user.id, interaction.user.username);
 		if (!currentUser) {
-			return interaction.reply({
-                content: `You haven't added any cards to your desired cards list, try calling /add-cards.`,
-                flags: MessageFlags.Ephemeral,
-            });
+			return ephemeralErrorReply(interaction, 'You haven\'t added any cards to your desired cards list, have you called /add-cards?');
 		}
 
 		const cardIds = AddRemoveOptionNames
@@ -59,7 +56,7 @@ const command = {
 			.filter(id => id !== null && id !== undefined && id?.trim() !== '')
 
 		if (cardIds.length === 0) {
-			return interaction.reply({ content: 'You must specify at least one card to remove from your desired cards list.', ephemeral: true });
+			return ephemeralErrorReply(interaction, 'You must specify at least one card to remove from your desired cards list.');
 		}
 
         const cardIdsWithCount = Array.from(new Set(cardIds)).map(a =>

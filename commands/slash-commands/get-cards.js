@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
-import { Rarities, Sets, setupEmbed, TargetUserOptionName } from '../command-utilities.js';
+import { ephemeralErrorReply, Rarities, Sets, setupEmbed, TargetUserOptionName } from '../command-utilities.js';
 import { getUser } from '../../database/database-utilities.js';
 
 const rarityFilterOptionName = 'rarity';
@@ -140,8 +140,7 @@ const command = {
                 });
             
             // Send the embed with the first 25 cards
-            const row = new ActionRowBuilder()
-	            .addComponents(forwardButton);
+            const row = new ActionRowBuilder().addComponents(forwardButton);
 
             const canFitOnOnePage = sortedCards.length <= 25;
             const embedMessage = await interaction.reply({
@@ -179,10 +178,7 @@ const command = {
             });
         }
         else if (userOption.id === interaction.client.user.id) {
-            return interaction.reply({
-                content: `I don't have any desired cards.`,
-                flags: (!visibility) ? MessageFlags.Ephemeral : null,
-            });
+            return ephemeralErrorReply(interaction, 'I don\'t have any desired cards.');
         }
         else {
             let stubUser = {
