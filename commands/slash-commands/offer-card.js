@@ -53,7 +53,7 @@ const command = {
             });
 
             if (trade) {
-                // Get the rarity of the card offered by the target user (if they've offered a card) so we can suggest cards of matching rarity
+                // Get the rarity of the card offered by the interaction target user (if they've offered a card) so we can suggest cards of matching rarity
                 const cards = getModel(interaction.client.db, Models.Card);
                 let card = null;
                 if (interaction.user.id === trade.owner && trade.targetOfferedCard !== null && trade.targetOfferedCard !== '') {
