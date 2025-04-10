@@ -1,3 +1,5 @@
+import { Op } from 'sequelize'; 
+
 export const Models = {
     User: 'User',
     Card: 'Card',
@@ -46,7 +48,7 @@ export async function getOrAddUser(client, userId, userNickname) {
     let fetchedUser = await getUser(client, userId, userNickname);
     if (!fetchedUser) {
         const users = getModel(client.db, Models.User);
-        await users.create({ id: userId, nickname: userNickname }).then()
+        await users.create({ id: userId, nickname: userNickname });
         console.log(`[LOG] Created new user entry for ${userNickname} (${userId})`);
 
         fetchedUser = await users.findOne({
@@ -59,4 +61,18 @@ export async function getOrAddUser(client, userId, userNickname) {
     }
 
     return fetchedUser;
+};
+
+export async function getOpenTradeForUsers(db, userIdA, userIdB) {
+    // Check if there is an ongoing trade between the two users
+    const trades = getModel(db, Models.Trade);
+    return await trades.findOne({
+        where: {
+            isComplete: false,
+            [Op.or]: [
+                { owner: userIdA, target: userIdB },
+                { owner: userIdB, target: userIdA },
+            ],
+        },
+    });
 };

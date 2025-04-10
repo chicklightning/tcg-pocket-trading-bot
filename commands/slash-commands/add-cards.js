@@ -1,62 +1,26 @@
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
-import { Rarities, Sets, setupEmbed } from '../command-utilities.js';
+import { AddRemoveOptionNames, Rarities, Sets, setupEmbed } from '../command-utilities.js';
 import { Models, getModel, getOrAddUser } from '../../database/database-utilities.js';
 
 const command = {
-	data: new SlashCommandBuilder()
-		.setName('add-cards')
-		.setDescription('Add one or more cards to the list of cards you want others to trade to you.')
-		.setContexts(InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel)
-		.addStringOption(option =>
-			option.setName('first-card')
-				.setDescription('Name of the card you want to add to your list of desired cards.')
-				.setAutocomplete(true)
-				.setRequired(true))
-		.addStringOption(option =>
-			option.setName('second-card')
-				.setDescription('Name of the card you want to add to your list of desired cards.')
-				.setAutocomplete(true)
-				.setRequired(false))
-		.addStringOption(option =>
-			option.setName('third-card')
-				.setDescription('Name of the card you want to add to your list of desired cards.')
-				.setAutocomplete(true)
-				.setRequired(false))
-		.addStringOption(option =>
-			option.setName('fourth-card')
-				.setDescription('Name of the card you want to add to your list of desired cards.')
-				.setAutocomplete(true)
-				.setRequired(false))
-		.addStringOption(option =>
-			option.setName('fifth-card')
-				.setDescription('Name of the card you want to add to your list of desired cards.')
-				.setAutocomplete(true)
-				.setRequired(false))
-		.addStringOption(option =>
-			option.setName('sixth-card')
-				.setDescription('Name of the card you want to add to your list of desired cards.')
-				.setAutocomplete(true)
-				.setRequired(false))
-		.addStringOption(option =>
-			option.setName('seventh-card')
-				.setDescription('Name of the card you want to add to your list of desired cards.')
-				.setAutocomplete(true)
-				.setRequired(false))
-		.addStringOption(option =>
-			option.setName('eighth-card')
-				.setDescription('Name of the card you want to add to your list of desired cards.')
-				.setAutocomplete(true)
-				.setRequired(false))
-		.addStringOption(option =>
-			option.setName('ninth-card')
-				.setDescription('Name of the card you want to add to your list of desired cards.')
-				.setAutocomplete(true)
-				.setRequired(false))
-		.addStringOption(option =>
-			option.setName('tenth-card')
-				.setDescription('Name of the card you want to add to your list of desired cards.')
-				.setAutocomplete(true)
-				.setRequired(false)),
+	data: (() => {
+        const builder = new SlashCommandBuilder()
+            .setName('add-cards')
+            .setDescription('Add one or more cards to the list of cards you want others to trade to you.')
+            .setContexts(InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel);
+
+        // Dynamically add string options using AddRemoveOptionNames
+        AddRemoveOptionNames.forEach(optionName => {
+            builder.addStringOption(option =>
+                option.setName(optionName)
+                    .setDescription(`Name of the card you want to add to your list of desired cards.`)
+                    .setAutocomplete(true)
+                    .setRequired(optionName === AddRemoveOptionNames[0]) // Only the first card is required
+            );
+        });
+
+        return builder;
+    })(),
 	async autocomplete(interaction) {
 		// TODO: Make an autocomplete utility function that filters the card cache based on the user's input
 		const focusedValue = interaction.options.getFocused().toLowerCase();
@@ -73,21 +37,16 @@ const command = {
 	},
 	async execute(interaction) {
 		let currentUser = await getOrAddUser(interaction.client, interaction.user.id, interaction.user.username);
+		if (!currentUser) {
+			return interaction.reply({
+                content: `Sorry, something went wrong. Please contact the bot's admin to let them know.`,
+                flags: MessageFlags.Ephemeral,
+            });
+		}
 
-		const cardIds = [
-			interaction.options.getString('first-card'),
-			interaction.options.getString('second-card'),
-			interaction.options.getString('third-card'),
-			interaction.options.getString('fourth-card'),
-			interaction.options.getString('fifth-card'),
-			interaction.options.getString('sixth-card'),
-			interaction.options.getString('seventh-card'),
-			interaction.options.getString('eighth-card'),
-			interaction.options.getString('ninth-card'),
-			interaction.options.getString('tenth-card'),
-		]
-			.filter(id => id !== null && id.trim() !== '')
-			.map(id => id.trim());
+		const cardIds = AddRemoveOptionNames
+            .map(optionName => interaction.options.getString(optionName)?.trim())
+            .filter(id => id !== null && id !== undefined && id?.trim() !== '');
 
 		if (cardIds.length === 0) {
 			return interaction.reply({ content: 'You must specify at least one card to add to your desired cards list.', ephemeral: true });

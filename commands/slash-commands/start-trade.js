@@ -1,19 +1,13 @@
-import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
-import { setupEmbed } from '../command-utilities.js';
-import { Models, getModel, getOrAddUser } from '../../database/database-utilities.js';
-import { Op } from 'sequelize';
+import { MessageFlags } from 'discord.js';
+import { setupEmbed, setupTargetUserCommand, TargetUserOptionName } from '../command-utilities.js';
+import { getModel, getOrAddUser, getOpenTradeForUsers, Models } from '../../database/database-utilities.js';
 
 const command = {
-	data: new SlashCommandBuilder()
+	data: setupTargetUserCommand('The user you want to trade with.')
 		.setName('start-trade')
-		.setDescription('Start a trade with another user. You must start a trade before offering a card.')
-		.setContexts(InteractionContextType.Guild, InteractionContextType.PrivateChannel)
-		.addUserOption(option =>
-            option.setName('target')
-                .setDescription('The user you want to trade with.')
-                .setRequired(true)),
+		.setDescription('Start a trade with another user. You must start a trade before offering a card.'),
 	async execute(interaction) {
-        const targetUser = interaction.options.getUser('target');
+        const targetUser = interaction.options.getUser(TargetUserOptionName);
 
         if (targetUser.id === interaction.user.id) {
             return interaction.reply({
@@ -30,17 +24,7 @@ const command = {
         }
 
         // Check if there is an ongoing trade between the two users
-        const trades = getModel(interaction.client.db, Models.Trade);
-        const existingTrade = await trades.findOne({
-            where: {
-                isComplete: false,
-                [Op.or]: [
-                    { owner: interaction.user.id, target: targetUser.id },
-                    { owner: targetUser.id, target: interaction.user.id },
-                ],
-            },
-        });
-
+        const existingTrade = await getOpenTradeForUsers(interaction.client.db, interaction.user.id, targetUser.id);
         if (existingTrade) {
             return interaction.reply({
                 content: `There is already an ongoing trade between you and ${targetUser.username}. Complete this trade before starting a new one.`,
@@ -49,10 +33,18 @@ const command = {
         }
 
 		// If the users don't exist in the database, create an entry for them
-		await getOrAddUser(interaction.client, targetUser.id, targetUser.username);
-		await getOrAddUser(interaction.client, interaction.user.id, interaction.user.username);
+		const newUser1 = await getOrAddUser(interaction.client, targetUser.id, targetUser.username);
+		const newUser2 = await getOrAddUser(interaction.client, interaction.user.id, interaction.user.username);
+
+        if (!newUser1 || !newUser2) {
+			return interaction.reply({
+                content: `Sorry, something went wrong. Please contact the bot's admin to let them know.`,
+                flags: MessageFlags.Ephemeral,
+            });
+		}
 
         // Create a new trade
+        const trades = getModel(interaction.client.db, Models.Trade);
         await trades.create({
             owner: interaction.user.id,
             target: targetUser.id,

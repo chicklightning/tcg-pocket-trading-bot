@@ -1,19 +1,13 @@
-import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
-import { Rarities, setupEmbed } from '../command-utilities.js';
-import { Models, getModel, getUser } from '../../database/database-utilities.js';
-import { Op } from 'sequelize';
+import { MessageFlags } from 'discord.js';
+import { Rarities, setupEmbed, setupTargetUserCommand, TargetUserOptionName } from '../command-utilities.js';
+import { Models, getModel, getUser, getOpenTradeForUsers } from '../../database/database-utilities.js';
 
 const command = {
-	data: new SlashCommandBuilder()
+	data: setupTargetUserCommand('The user you want to complete the trade with.')
 		.setName('complete-trade')
-		.setDescription('Completes a trade you\'ve started with another user.')
-		.setContexts(InteractionContextType.Guild, InteractionContextType.PrivateChannel)
-        .addUserOption(option =>
-            option.setName('target')
-                .setDescription('The user you want to complete the trade with.')
-                .setRequired(true)),
+		.setDescription('Completes a trade you\'ve started with another user.'),
 	async execute(interaction) {
-        const targetUser = interaction.options.getUser('target');
+        const targetUser = interaction.options.getUser(TargetUserOptionName);
 
 		if (targetUser.id === interaction.user.id) {
             return interaction.reply({
@@ -30,17 +24,7 @@ const command = {
         }
 
         // Check if there is an ongoing trade between the two users
-        const trades = getModel(interaction.client.db, Models.Trade);
-        const trade = await trades.findOne({
-            where: {
-                isComplete: false,
-                [Op.or]: [
-                    { owner: interaction.user.id, target: targetUser.id },
-                    { owner: targetUser.id, target: interaction.user.id },
-                ],
-            },
-        });
-
+        const trade = await getOpenTradeForUsers(interaction.client.db, interaction.user.id, targetUser.id);
         if (!trade) {
             return interaction.reply({
                 content: `No open trade exists between you and ${targetUser.username}. Did you forget to call /start-trade?`,

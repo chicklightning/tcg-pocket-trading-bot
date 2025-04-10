@@ -1,6 +1,11 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
-import { Rarities, Sets, setupEmbed } from '../command-utilities.js';
+import { Rarities, Sets, setupEmbed, TargetUserOptionName } from '../command-utilities.js';
 import { getUser } from '../../database/database-utilities.js';
+
+const rarityFilterOptionName = 'rarity';
+const setFilterOptionName = 'set';
+const visibilityOptionName = 'visible-to-all';
+const filterCallerCardsOptionName = 'filter-my-cards';
 
 const backId = 'back'
 const forwardId = 'forward'
@@ -65,7 +70,7 @@ const command = {
 		.setDescription('Get the list of cards you want others to trade to you.')
         .setContexts(InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel)
         .addIntegerOption(option => {
-            option.setName('rarity')
+            option.setName(rarityFilterOptionName)
             .setDescription('The rarity of cards you\'d like to display.');
         
             // Dynamically add rarity choices
@@ -76,7 +81,7 @@ const command = {
             return option.setRequired(false);
         })
         .addStringOption(option => {
-            option.setName('set')
+            option.setName(setFilterOptionName)
                 .setDescription('The set of cards you\'d like to display.');
             
             // Dynamically add set choices
@@ -87,26 +92,26 @@ const command = {
             return option.setRequired(false);
         })
         .addUserOption(option =>
-            option.setName('target')
+            option.setName(TargetUserOptionName)
                 .setDescription('The user whose desired cards you want to view. If not specified, you will see your own list.')
                 .setRequired(false))
         .addBooleanOption(option =>
-            option.setName('visible-to-all')
+            option.setName(visibilityOptionName)
                 .setDescription('Set if message contents are visible to all users or only to you. OFF by default.')
                 .setRequired(false))
         .addBooleanOption(option =>
-            option.setName('filter-my-cards')
+            option.setName(filterCallerCardsOptionName)
                 .setDescription('If showing a target user\'s cards, don\'t show cards you also need. OFF by default.')
                 .setRequired(false)),
 	async execute(interaction) {
-        const rarityFilter = interaction.options.getInteger('rarity') ?? 0; // 0 means no filter
-        const setFilter = interaction.options.getString('set') ?? ''; // '' means no filter
-        const userOption = interaction.options.getUser('target');
-        const visibility = interaction.options.getBoolean('visible-to-all') ?? false;
+        const rarityFilter = interaction.options.getInteger(rarityFilterOptionName) ?? 0; // 0 means no filter
+        const setFilter = interaction.options.getString(setFilterOptionName) ?? ''; // '' means no filter
+        const userOption = interaction.options.getUser(TargetUserOptionName);
+        const visibility = interaction.options.getBoolean(visibilityOptionName) ?? false;
 		const targetUser = await getUser(interaction.client, userOption?.id ?? interaction.user.id, userOption?.username ?? interaction.user.username);
 
         if (targetUser && targetUser.desiredCards && targetUser.desiredCards.length > 0) {
-            const filterDesiredCards = interaction.options.getBoolean('filter-my-cards') ?? false;
+            const filterDesiredCards = interaction.options.getBoolean(filterCallerCardsOptionName) ?? false;
             let user = null;
 
             if (targetUser.id !== interaction.user.id && filterDesiredCards) {

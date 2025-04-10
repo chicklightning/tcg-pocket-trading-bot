@@ -1,62 +1,26 @@
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
-import { Rarities, Sets, setupEmbed } from '../command-utilities.js';
+import { AddRemoveOptionNames, Rarities, Sets, setupEmbed } from '../command-utilities.js';
 import { Models, getModel, getUser } from '../../database/database-utilities.js';
 
 const command = {
-	data: new SlashCommandBuilder()
-		.setName('remove-cards')
-		.setDescription('Remove one or more cards from the list of cards you want others to trade to you.')
-        .setContexts(InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel)
-		.addStringOption(option =>
-			option.setName('first-card')
-				.setDescription('Name of the card you want to remove from your list of desired cards.')
-				.setAutocomplete(true)
-				.setRequired(true))
-		.addStringOption(option =>
-			option.setName('second-card')
-				.setDescription('Name of the card you want to remove from your list of desired cards.')
-				.setAutocomplete(true)
-				.setRequired(false))
-		.addStringOption(option =>
-			option.setName('third-card')
-				.setDescription('Name of the card you want to remove from your list of desired cards.')
-				.setAutocomplete(true)
-				.setRequired(false))
-		.addStringOption(option =>
-			option.setName('fourth-card')
-				.setDescription('Name of the card you want to remove from your list of desired cards.')
-				.setAutocomplete(true)
-				.setRequired(false))
-		.addStringOption(option =>
-			option.setName('fifth-card')
-				.setDescription('Name of the card you want to remove from your list of desired cards.')
-				.setAutocomplete(true)
-				.setRequired(false))
-		.addStringOption(option =>
-			option.setName('sixth-card')
-				.setDescription('Name of the card you want to remove from your list of desired cards.')
-				.setAutocomplete(true)
-				.setRequired(false))
-		.addStringOption(option =>
-			option.setName('seventh-card')
-				.setDescription('Name of the card you want to remove from your list of desired cards.')
-				.setAutocomplete(true)
-				.setRequired(false))
-		.addStringOption(option =>
-			option.setName('eighth-card')
-				.setDescription('Name of the card you want to remove from your list of desired cards.')
-				.setAutocomplete(true)
-				.setRequired(false))
-		.addStringOption(option =>
-			option.setName('ninth-card')
-				.setDescription('Name of the card you want to remove from your list of desired cards.')
-				.setAutocomplete(true)
-				.setRequired(false))
-		.addStringOption(option =>
-			option.setName('tenth-card')
-				.setDescription('Name of the card you want to remove from your list of desired cards.')
-				.setAutocomplete(true)
-				.setRequired(false)),
+	data: (() => {
+			const builder = new SlashCommandBuilder()
+				.setName('remove-cards')
+				.setDescription('Remove one or more cards from the list of cards you want others to trade to you.')
+				.setContexts(InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel);
+	
+			// Dynamically add string options using AddRemoveOptionNames
+			AddRemoveOptionNames.forEach(optionName => {
+				builder.addStringOption(option =>
+					option.setName(optionName)
+						.setDescription(`Name of the card you want to remove from your list of desired cards.`)
+						.setAutocomplete(true)
+						.setRequired(optionName === AddRemoveOptionNames[0]) // Only the first card is required
+				);
+			});
+	
+			return builder;
+		})(),
 	async autocomplete(interaction) {
 		const focusedValue = interaction.options.getFocused().toLowerCase();
 		const user = await getUser(interaction.client, interaction.user.id, interaction.user.username);
@@ -90,20 +54,9 @@ const command = {
             });
 		}
 
-		const cardIds = [
-			interaction.options.getString('first-card'),
-			interaction.options.getString('second-card'),
-			interaction.options.getString('third-card'),
-			interaction.options.getString('fourth-card'),
-			interaction.options.getString('fifth-card'),
-			interaction.options.getString('sixth-card'),
-			interaction.options.getString('seventh-card'),
-			interaction.options.getString('eighth-card'),
-			interaction.options.getString('ninth-card'),
-			interaction.options.getString('tenth-card'),
-		]
-			.filter(id => id !== null && id.trim() !== '')
-			.map(id => id.trim());
+		const cardIds = AddRemoveOptionNames
+			.map(optionName => interaction.options.getString(optionName)?.trim())
+			.filter(id => id !== null && id !== undefined && id?.trim() !== '')
 
 		if (cardIds.length === 0) {
 			return interaction.reply({ content: 'You must specify at least one card to remove from your desired cards list.', ephemeral: true });

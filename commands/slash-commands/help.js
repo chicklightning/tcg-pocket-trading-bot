@@ -1,6 +1,8 @@
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { setupEmbed } from '../command-utilities.js';
 
+const commandNameOptionName = 'command-name';
+
 const addCardsEmbed = setupEmbed()
     .setURL('https://github.com/chicklightning/tcg-pocket-trading-bot/wiki/User-manual#add-cards')
     .setDescription('This command lets you add cards to the list of cards you want other people to trade to you (so cards you need).')
@@ -199,10 +201,10 @@ const commandToEmbedMap = {
 const command = {
 	data: new SlashCommandBuilder()
 		.setName('help')
-		.setDescription('Add one or more cards to the list of cards you want others to trade to you.')
+		.setDescription('Read more about how this bot and its commands work.')
 		.setContexts(InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel)
 		.addStringOption(option =>
-			option.setName('command-name')
+			option.setName(commandNameOptionName)
 				.setDescription('Name of the command you want information on.')
 				.setRequired(false)
                 .addChoices(
@@ -212,7 +214,7 @@ const command = {
                     }))
                 )),
 	async execute(interaction) {
-		const commandName = interaction.options.getString('command-name') ?? '';
+		const commandName = interaction.options.getString(commandNameOptionName) ?? '';
         
         // Fetch the corresponding embed or default to a generic help embed
         const embed = commandName
@@ -225,7 +227,7 @@ const command = {
                 .setDescription('Use this command to get help for specific commands.')
                 .addFields([
                     { name: 'Available Commands', value: Object.keys(commandToEmbedMap).join(', ') },
-                    { name: 'Usage', value: '/help command-name:[command-name]' },
+                    { name: 'Usage', value: `/help ${commandNameOptionName}:[command-name]` },
                 ]);
 
 		return interaction.reply({

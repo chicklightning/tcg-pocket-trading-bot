@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
-import { setupEmbed, Rarities } from '../command-utilities.js';
-import { Models, getModel } from '../../database/database-utilities.js';
+import { setupEmbed, Rarities, TargetUserOptionName } from '../command-utilities.js';
+import { Models, getModel, getOpenTradeForUsers } from '../../database/database-utilities.js';
 import { Op } from 'sequelize';
 
 const backId = 'back'
@@ -112,25 +112,15 @@ const command = {
 		.setDescription('See your open trades.')
 		.setContexts(InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel)
 		.addUserOption(option =>
-            option.setName('target')
+            option.setName(TargetUserOptionName)
                 .setDescription('Will show you an open trade with this user, if one exists.')
                 .setRequired(false)),
 	async execute(interaction) {
-		const targetUser = interaction.options.getUser('target');
-        const trades = getModel(interaction.client.db, Models.Trade);
+		const targetUser = interaction.options.getUser(TargetUserOptionName);
         let tradesList = {};
         if (targetUser) {
             // Check if there is an ongoing trade between the two users
-            const existingTrade = await trades.findOne({
-                where: {
-                    isComplete: false,
-                    [Op.or]: [
-                        { owner: interaction.user.id, target: targetUser.id },
-                        { owner: targetUser.id, target: interaction.user.id },
-                    ],
-                },
-            });
-
+            const existingTrade = await getOpenTradeForUsers(interaction.client.db, interaction.user.id, targetUser.id);
             if (!existingTrade) {
                 return interaction.reply({
                     content: `No open trade exists between you and ${targetUser.username}.`,
@@ -141,6 +131,7 @@ const command = {
             tradesList = [ existingTrade ];
         }
         else {
+            const trades = getModel(interaction.client.db, Models.Trade);
             tradesList = await trades.findAll({
                 where: {
                     isComplete: false,
@@ -153,8 +144,7 @@ const command = {
         }
 
         // Send the embed with the first 10 trades
-        const row = new ActionRowBuilder()
-            .addComponents(forwardButton);
+        const row = new ActionRowBuilder().addComponents(forwardButton);
         
         const canFitOnOnePage = tradesList.length <= 10;
         const embedMessage = await interaction.reply({
@@ -164,7 +154,7 @@ const command = {
         });
 
         // Exit if there is only one page of guilds (no need for all of this)
-        if (canFitOnOnePage)  {
+        if (canFitOnOnePage) {
             return;
         }
 
