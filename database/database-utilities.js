@@ -20,8 +20,6 @@ export async function getUser(client, userId, userNickname) {
         throw new Error('Client and userId must be provided.');
     }
 
-    console.log("HERE");
-
     const users = getModel(client.db, Models.User);
     let fetchedUser = await users.findOne({
       where: { id: userId },
