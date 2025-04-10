@@ -15,9 +15,23 @@ const command = {
 	async execute(interaction) {
         const targetUser = interaction.options.getUser('target');
 
+        if (targetUser.id === interaction.client.user.id) {
+            return interaction.reply({
+                content: `You can't cancel a trade with me.`,
+                flags: MessageFlags.Ephemeral,
+            });
+        }
+
+        if (!targetUser) {
+            return interaction.reply({
+                content: `No open trade exists between you and ${targetUser.username}. Did you forget to call /start-trade?`,
+                flags: MessageFlags.Ephemeral,
+            });
+        }
+
 		if (targetUser.id === interaction.user.id) {
             return interaction.reply({
-                content: `You can't complete a trade with yourself.`,
+                content: `You can't cancel a trade with yourself.`,
                 flags: MessageFlags.Ephemeral,
             });
         }

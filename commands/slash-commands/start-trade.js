@@ -1,6 +1,6 @@
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { setupEmbed } from '../command-utilities.js';
-import { Models, getModel, getUser } from '../../database/database-utilities.js';
+import { Models, getModel, getOrAddUser } from '../../database/database-utilities.js';
 import { Op } from 'sequelize';
 
 const command = {
@@ -13,11 +13,18 @@ const command = {
                 .setDescription('The user you want to trade with.')
                 .setRequired(true)),
 	async execute(interaction) {
-		const targetUser = interaction.options.getUser('target');
+        const targetUser = interaction.options.getUser('target');
 
-		if (targetUser.id === interaction.user.id) {
+        if (targetUser.id === interaction.user.id) {
             return interaction.reply({
                 content: `You can't start a trade with yourself.`,
+                flags: MessageFlags.Ephemeral,
+            });
+        }
+
+        if (targetUser.id === interaction.client.user.id) {
+            return interaction.reply({
+                content: `You can't start a trade with me.`,
                 flags: MessageFlags.Ephemeral,
             });
         }
@@ -42,8 +49,8 @@ const command = {
         }
 
 		// If the users don't exist in the database, create an entry for them
-		await getUser(interaction.client, targetUser.id, targetUser.username);
-		await getUser(interaction.client, interaction.user.id, interaction.user.username);
+		await getOrAddUser(interaction.client, targetUser.id, targetUser.username);
+		await getOrAddUser(interaction.client, interaction.user.id, interaction.user.username);
 
         // Create a new trade
         await trades.create({

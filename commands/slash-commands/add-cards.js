@@ -1,6 +1,6 @@
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { Rarities, Sets, setupEmbed } from '../command-utilities.js';
-import { Models, getModel, getUser } from '../../database/database-utilities.js';
+import { Models, getModel, getOrAddUser } from '../../database/database-utilities.js';
 
 const command = {
 	data: new SlashCommandBuilder()
@@ -72,7 +72,7 @@ const command = {
 		);
 	},
 	async execute(interaction) {
-		let currentUser = await getUser(interaction.client, interaction.user.id, interaction.user.username);
+		let currentUser = await getOrAddUser(interaction.client, interaction.user.id, interaction.user.username);
 
 		const cardIds = [
 			interaction.options.getString('first-card'),

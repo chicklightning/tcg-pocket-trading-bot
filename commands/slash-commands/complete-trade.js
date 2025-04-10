@@ -22,6 +22,13 @@ const command = {
             });
         }
 
+        if (targetUser.id === interaction.client.user.id) {
+            return interaction.reply({
+                content: `You can't complete a trade with me.`,
+                flags: MessageFlags.Ephemeral,
+            });
+        }
+
         // Check if there is an ongoing trade between the two users
         const trades = getModel(interaction.client.db, Models.Trade);
         const trade = await trades.findOne({

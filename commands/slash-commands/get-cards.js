@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, InteractionContextType, SlashCommandBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { Rarities, Sets, setupEmbed } from '../command-utilities.js';
 import { getUser } from '../../database/database-utilities.js';
 
@@ -105,9 +105,10 @@ const command = {
         const visibility = interaction.options.getBoolean('visible-to-all') ?? false;
 		const targetUser = await getUser(interaction.client, userOption?.id ?? interaction.user.id, userOption?.username ?? interaction.user.username);
 
-        if (targetUser.desiredCards && targetUser.desiredCards.length > 0) {
+        if (targetUser && targetUser.desiredCards && targetUser.desiredCards.length > 0) {
             const filterDesiredCards = interaction.options.getBoolean('filter-my-cards') ?? false;
             let user = null;
+
             if (targetUser.id !== interaction.user.id && filterDesiredCards) {
                 user = await getUser(interaction.client, interaction.user.id, interaction.user.username);
             }
@@ -140,7 +141,7 @@ const command = {
             const canFitOnOnePage = sortedCards.length <= 25;
             const embedMessage = await interaction.reply({
                 embeds: [ await generateEmbed(sortedCards, targetUser, 0) ],
-                ephemeral: !visibility,
+                flags: (!visibility) ? MessageFlags.Ephemeral : null,
                 components: canFitOnOnePage ? [] : [ row ]
             });
 
@@ -160,7 +161,7 @@ const command = {
                 // Respond to interaction by updating message with new embed
                 await interaction.update({
                     embeds: [ await generateEmbed(sortedCards, targetUser, currentIndex) ],
-                    ephemeral: !visibility,
+                    flags: (!visibility) ? MessageFlags.Ephemeral : null,
                     components: [
                         new ActionRowBuilder().addComponents(
                             // back button if it isn't the start
@@ -170,6 +171,21 @@ const command = {
                         )
                     ]
                 });
+            });
+        }
+        else if (userOption.id === interaction.client.user.id) {
+            return interaction.reply({
+                content: `I don't have any desired cards.`,
+                flags: (!visibility) ? MessageFlags.Ephemeral : null,
+            });
+        }
+        else {
+            let stubUser = {
+                nickname: userOption?.username ?? interaction.user.username,
+            }
+            await interaction.reply({
+                embeds: [ await generateEmbed([], stubUser, 0) ],
+                flags: (!visibility) ? MessageFlags.Ephemeral : null,
             });
         }
 	},
