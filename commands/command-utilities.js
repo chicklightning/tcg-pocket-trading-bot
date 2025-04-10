@@ -15,6 +15,13 @@ export const AddRemoveOptionNames = [
 
 export const Rarities = ['♦️', '♦️♦️', '♦️♦️♦️', '♦️♦️♦️♦️', '⭐️'];
 
+export const Sets = {
+	'Genetic Apex': 'GA',
+	'Mythical Island': 'MI',
+	'Space-Time Smackdown': 'STS',
+	'Triumphant Light': 'TL',
+};
+
 export const TargetUserOptionName = 'target';
 
 export async function ephemeralErrorReply(interaction, message) {
@@ -25,13 +32,6 @@ export async function ephemeralErrorReply(interaction, message) {
 };
 
 export function generateAutocompleteOptions(list, filterFn, ...filterParams) {
-	const Sets = {
-		'Genetic Apex': 'GA',
-		'Mythical Island': 'MI',
-		'Space-Time Smackdown': 'STS',
-		'Triumphant Light': 'TL',
-	};
-
     const filtered = list
         .filter(item => filterFn(item, ...filterParams)) // Pass additional parameters to the filter function
 		.sort((a, b) => {
