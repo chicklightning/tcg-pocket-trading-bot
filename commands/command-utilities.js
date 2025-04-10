@@ -15,13 +15,6 @@ export const AddRemoveOptionNames = [
 
 export const Rarities = ['♦️', '♦️♦️', '♦️♦️♦️', '♦️♦️♦️♦️', '⭐️'];
 
-export const Sets = {
-	'Genetic Apex': 'GA',
-	'Mythical Island': 'MI',
-	'Space-Time Smackdown': 'STS',
-	'Triumphant Light': 'TL',
-};
-
 export const TargetUserOptionName = 'target';
 
 export async function ephemeralErrorReply(interaction, message) {
@@ -29,6 +22,27 @@ export async function ephemeralErrorReply(interaction, message) {
 		content: message,
 		flags: MessageFlags.Ephemeral,
 	});
+};
+
+export function generateAutocompleteOptions(list, filterFn, ...filterParams) {
+	const Sets = {
+		'Genetic Apex': 'GA',
+		'Mythical Island': 'MI',
+		'Space-Time Smackdown': 'STS',
+		'Triumphant Light': 'TL',
+	};
+
+    const filtered = list
+        .filter(item => filterFn(item, ...filterParams)) // Pass additional parameters to the filter function
+		.sort((a, b) => {
+			return (a.rarity === b.rarity) ? a.name.localeCompare(b.name) : a.rarity - b.rarity;
+		})
+        .slice(0, 25); // Limit results to 25
+
+    return filtered.map(item => ({
+		name: `${item.name} ${Rarities[item.rarity - 1]} from ${Sets[item.packSet]}`,
+		value: item.id,
+	}));
 };
 
 export function setupEmbed() {

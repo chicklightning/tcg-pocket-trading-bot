@@ -1,5 +1,5 @@
 import { MessageFlags } from 'discord.js';
-import { ephemeralErrorReply, Rarities, Sets, setupEmbed, setupTargetUserCommand, TargetUserOptionName } from '../command-utilities.js';
+import { ephemeralErrorReply, generateAutocompleteOptions, Rarities, setupEmbed, setupTargetUserCommand, TargetUserOptionName } from '../command-utilities.js';
 import { Models, getModel, getOpenTradeForUsers, getUser } from '../../database/database-utilities.js';
 
 const cardOptionName = 'card';
@@ -58,49 +58,34 @@ const command = {
             // If a target is specified and there's no open trade found, the command will fail and the user will receive an error message
         }
 
+        const filterFn = (choice, focusedVal, otherRarity, rareFilter, currentUser) => {
+            const startsWith = choice.name.toLowerCase().startsWith(focusedVal);
+            let matchesRarity = true;
+            if (otherRarity !== 0 && rareFilter) {
+                matchesRarity = (choice.rarity === otherRarity);
+            }
+            return startsWith && matchesRarity && !currentUser.desiredCards.find((card) => card.id == choice.id);
+        };
+
         if (targetFilter && targetUser && targetUser.desiredCards && targetUser.desiredCards.length > 0) {
-            let filtered = targetUser.desiredCards
-                .filter(choice => {
-                    const startsWith = choice.name.toLowerCase().startsWith(focusedValue);
-                    let matchesRarity = true;
-                    if (otherCardRarity !== 0 && rarityFilter) {
-                        matchesRarity = (choice.rarity === otherCardRarity);
-                    }
-                    return startsWith && matchesRarity && !user.desiredCards.find((card) => card.id == choice.id);
-                })
-                .sort((a, b) => {
-                    return (a.rarity === b.rarity) ? a.name.localeCompare(b.name) : a.rarity - b.rarity;
-                })
-                .slice(0, 25); // Limit results to 25
-                
-            filteredList = filtered
-                .map(
-                    choice => ({
-                        name: `${choice.name} ${Rarities[choice.rarity - 1]} from ${Sets[choice.packSet]}`,
-                        value: choice.id 
-                    }));
+            filteredList = generateAutocompleteOptions(
+                targetUser.desiredCards,
+                filterFn,
+                focusedValue,
+                otherCardRarity,
+                rarityFilter,
+                user,
+            );
         }
         else {
-            const filtered = interaction.client.cardCache
-                .filter(choice => {
-                    const startsWith = choice.name.toLowerCase().startsWith(focusedValue);
-                    let matchesRarity = true;
-                    if (otherCardRarity !== 0 && rarityFilter) {
-                        matchesRarity = (choice.rarity === otherCardRarity);
-                    }
-                    return startsWith && matchesRarity && !user.desiredCards.find((card) => card.id == choice.id);
-                })
-                .sort((a, b) => {
-                    return (a.rarity === b.rarity) ? a.name.localeCompare(b.name) : a.rarity - b.rarity;
-                })
-                .slice(0, 25) // Limit results to 25
-
-            filteredList = filtered
-                .map(
-                    choice => ({
-                        name: `${choice.name} ${Rarities[choice.rarity - 1]} from ${Sets[choice.packSet]}`,
-                        value: choice.id 
-                    }));
+            filteredList = generateAutocompleteOptions(
+                interaction.client.cardCache,
+                filterFn,
+                focusedValue,
+                otherCardRarity,
+                rarityFilter,
+                user,
+            );
         }
         
         return interaction.respond(filteredList);

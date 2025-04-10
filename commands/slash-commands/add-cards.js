@@ -1,5 +1,5 @@
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
-import { AddRemoveOptionNames, ephemeralErrorReply, Rarities, Sets, setupEmbed } from '../command-utilities.js';
+import { AddRemoveOptionNames, ephemeralErrorReply, generateAutocompleteOptions, Rarities, setupEmbed } from '../command-utilities.js';
 import { Models, getModel, getOrAddUser } from '../../database/database-utilities.js';
 
 const command = {
@@ -22,18 +22,9 @@ const command = {
         return builder;
     })(),
 	async autocomplete(interaction) {
-		// TODO: Make an autocomplete utility function that filters the card cache based on the user's input
 		const focusedValue = interaction.options.getFocused().toLowerCase();
-		const filtered = interaction.client.cardCache
-			.filter(choice => choice.id.toLowerCase().startsWith(focusedValue))
-			.slice(0, 25); // Limit results to 25
-		await interaction.respond(
-			filtered.map(
-				choice => ({
-						name: `${choice.name} ${Rarities[choice.rarity - 1]} from ${Sets[choice.packSet]}`,
-						value: choice.id 
-					})),
-		);
+		const filterFn = (choice, focusedValue) => choice.id.toLowerCase().startsWith(focusedValue);
+		await interaction.respond(generateAutocompleteOptions(interaction.client.cardCache, filterFn, focusedValue));
 	},
 	async execute(interaction) {
 		let currentUser = await getOrAddUser(interaction.client, interaction.user.id, interaction.user.username);

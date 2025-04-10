@@ -1,5 +1,5 @@
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from 'discord.js';
-import { AddRemoveOptionNames, ephemeralErrorReply, Rarities, Sets, setupEmbed } from '../command-utilities.js';
+import { AddRemoveOptionNames, ephemeralErrorReply, generateAutocompleteOptions, Rarities, setupEmbed } from '../command-utilities.js';
 import { Models, getModel, getUser } from '../../database/database-utilities.js';
 
 const command = {
@@ -25,21 +25,8 @@ const command = {
 		const focusedValue = interaction.options.getFocused().toLowerCase();
 		const user = await getUser(interaction.client, interaction.user.id, interaction.user.username);
 		if (user) {
-			const filtered = user.desiredCards
-				.filter(choice => choice.id.toLowerCase().startsWith(focusedValue))
-				.slice(0, 25) // Limit results to 25
-				.sort((a, b) => {
-					return (a.rarity === b.rarity) ? a.name.localeCompare(b.name) : a.rarity - b.rarity;
-				});
-
-			return interaction.respond(
-				filtered
-					.map(
-						choice => ({
-							name: `${choice.name} ${Rarities[choice.rarity - 1]} from ${Sets[choice.packSet]}`,
-							value: choice.id 
-						})),
-			);
+			const filterFn = (choice, focusedValue) => choice.id.toLowerCase().startsWith(focusedValue);
+			await interaction.respond(generateAutocompleteOptions(user.desiredCards, filterFn, focusedValue));
 		}
 
 		// User has interacted with bot before, so they have no desired cards to remove
