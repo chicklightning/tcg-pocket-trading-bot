@@ -15,30 +15,12 @@ export function getModel(database, modelEnum) {
     return model;
 };
 
-export async function getOrAddUser(client, userId, userNickname) {
-    if (!client || !userId) {
-        throw new Error('Client and userId must be provided.');
-    }
-
-    let fetchedUser = getUser(client, userId, userNickname);
-    if (!fetchedUser) {
-        const newUser = await users.create({ id: userId, nickname: userNickname });
-        console.log(`[LOG] Created new user entry for ${userNickname} (${userId})`);
-
-        fetchedUser = await users.findOne({
-          where: { id: userId },
-          include: [{
-              model: getModel(client.db, Models.Card),
-              as: 'desiredCards',
-          }],
-        });
-    }
-};
-
 export async function getUser(client, userId, userNickname) {
     if (!client || !userId) {
         throw new Error('Client and userId must be provided.');
     }
+
+    console.log("HERE");
 
     const users = getModel(client.db, Models.User);
     let fetchedUser = await users.findOne({
@@ -53,6 +35,29 @@ export async function getUser(client, userId, userNickname) {
         fetchedUser.nickname = userNickname;
         await fetchedUser.save();
         console.log(`[LOG] Updated nickname for user ${userId} to ${userNickname}`);
+    }
+
+    return fetchedUser;
+};
+
+export async function getOrAddUser(client, userId, userNickname) {
+    if (!client || !userId) {
+        throw new Error('Client and userId must be provided.');
+    }
+
+    let fetchedUser = await getUser(client, userId, userNickname);
+    if (!fetchedUser) {
+        const users = getModel(client.db, Models.User);
+        await users.create({ id: userId, nickname: userNickname }).then()
+        console.log(`[LOG] Created new user entry for ${userNickname} (${userId})`);
+
+        fetchedUser = await users.findOne({
+          where: { id: userId },
+          include: [{
+              model: getModel(client.db, Models.Card),
+              as: 'desiredCards',
+          }],
+        });
     }
 
     return fetchedUser;
