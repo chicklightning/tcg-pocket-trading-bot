@@ -178,7 +178,7 @@ const command = {
                 });
             });
         }
-        else if (userOption.id === interaction.client.user.id) {
+        else if (userOption?.id === interaction.client.user.id) {
             return ephemeralErrorReply(interaction, 'I don\'t have any desired cards.');
         }
         else {
