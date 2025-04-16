@@ -122,19 +122,22 @@ const command = {
             // Sort the desired cards by rarity (ascending) and then by name (alphabetically)
             const sortedCards = targetUser.desiredCards
                 .filter(card => {
+                    let rarityFilterBool = true;
                     if (rarityFilter > 0) {
-                        return card.rarity === rarityFilter; // Filter by rarity if specified
+                        rarityFilterBool = card.rarity === rarityFilter; // Filter by rarity if specified
                     }
-                    
+
+                    let setFilterBool = true;
                     if (setFilter !== '') {
-                        return card.packSet.toLowerCase() === setFilter.toLowerCase(); // Filter by set if specified
+                        setFilterBool = card.packSet.toLowerCase() === setFilter.toLowerCase(); // Filter by set if specified
                     }
 
+                    let userFilterBool = true;
                     if (user && filterDesiredCards) {
-                        return !user.desiredCards.find(userCard => userCard.id === card.id);
+                        userFilterBool = !user.desiredCards.find(userCard => userCard.id === card.id);
                     }
 
-                    return true;
+                    return rarityFilterBool && setFilterBool && userFilterBool;
                 })
                 .sort((a, b) => {
                     return (a.rarity === b.rarity) ? a.name.localeCompare(b.name) : a.rarity - b.rarity;
