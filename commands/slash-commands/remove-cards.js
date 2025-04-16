@@ -29,7 +29,7 @@ const command = {
 			return interaction.respond(generateAutocompleteOptions(user.desiredCards, filterFn, focusedValue));
 		}
 
-		// User has interacted with bot before, so they have no desired cards to remove
+		// User has not interacted with bot before, so they have no desired cards to remove
 		await interaction.respond([]);
 	},
 	async execute(interaction) {
