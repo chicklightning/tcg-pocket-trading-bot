@@ -28,10 +28,7 @@ async function updateCards(scrapedResults) {
     const cards = card(db.sequelize, db.Sequelize.DataTypes);
 
     // Delete all entries in table first, start clean
-    cards.destroy({
-        where: {},
-        truncate: { cascade: true },
-      });
+    // cards.sync({ force: true });
     
     for (const result of scrapedResults) {
         const existingCard = await cards.findOne({
@@ -60,7 +57,7 @@ async function updateCards(scrapedResults) {
 
 // URL is a query for all currently tradeable cards in Pocket TCG - first four sets; 1 diamond through 1 star rarity
 scrapeSite(
-    'https://pocket.limitlesstcg.com/cards/?q=%21set%3AA1%2CA1a%2CA2%2CA2a+rarity%3A1%2C2%2C3%2C4%2C5+display%3Afull+sort%3Aset&show=all')
+    'https://pocket.limitlesstcg.com/cards/?q=%21set%3AA1%2CA1a%2CA2b%2CA2%2CA2a+rarity%3A1%2C2%2C3%2C4%2C5&show=all&sort=name&display=full')
     .then(result => {
         console.log(`[LOG] Successfully scraped ${result.length} tradeable cards.`);
         updateCards(result);

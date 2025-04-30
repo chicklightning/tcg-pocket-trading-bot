@@ -20,6 +20,7 @@ export const Sets = {
 	'Mythical Island': 'MI',
 	'Space-Time Smackdown': 'STS',
 	'Triumphant Light': 'TL',
+	'Shining Revelry': 'SR',
 };
 
 export const TargetUserOptionName = 'target';
