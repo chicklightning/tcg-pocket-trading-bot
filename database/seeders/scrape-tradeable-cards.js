@@ -57,7 +57,7 @@ async function updateCards(scrapedResults) {
 
 // URL is a query for all currently tradeable cards in Pocket TCG - first four sets; 1 diamond through 1 star rarity
 scrapeSite(
-    'https://pocket.limitlesstcg.com/cards/?q=%21set%3AA1%2CA1a%2CA2b%2CA2%2CA2a+rarity%3A1%2C2%2C3%2C4%2C5&show=all&sort=name&display=full')
+    'https://pocket.limitlesstcg.com/cards/?q=%21set%3AA3%2CA1%2CA1a%2CA2b%2CA2%2CA2a+rarity%3A1%2C2%2C3%2C4%2C5+display%3Afull&show=all&sort=name')
     .then(result => {
         console.log(`[LOG] Successfully scraped ${result.length} tradeable cards.`);
         updateCards(result);

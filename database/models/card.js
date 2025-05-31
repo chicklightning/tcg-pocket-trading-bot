@@ -38,7 +38,13 @@ export default (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
-        isIn: [['Genetic Apex', 'Mythical Island', 'Space-Time Smackdown', 'Triumphant Light', 'Shining Revelry']],
+        isIn: [['Genetic Apex',
+                'Mythical Island',
+                'Space-Time Smackdown',
+                'Triumphant Light', 
+                'Shining Revelry',
+                'Celestial Guardians',
+              ]],
       },
     },
     rarity: {

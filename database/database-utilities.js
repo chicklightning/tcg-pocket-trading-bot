@@ -1,10 +1,14 @@
 import { Op } from 'sequelize'; 
 
+/**
+ * Utility class for database operations.
+ */
 export class DatabaseUtilities {
+    /**
+     * @param {object} database
+     */
     constructor(database) {
-        if (!database) {
-            throw new Error('A database instance must be provided.');
-        }
+        if (!database) throw new Error('A database instance must be provided.');
 
         this.database = database;
         this.models = {
@@ -14,6 +18,11 @@ export class DatabaseUtilities {
         };
     }
 
+    /**
+     * Gets a database model based on the provided string.
+     * @param {string} modelEnum 
+     * @returns {object}
+     */
     getModel(modelEnum) {
         if (!modelEnum) {
             throw new Error('Model enum value must be provided.');
@@ -25,6 +34,12 @@ export class DatabaseUtilities {
         return model;
     }
 
+    /**
+     * Fetches a user by ID, updates nickname if changed.
+     * @param {string} userId 
+     * @param {string} userNickname 
+     * @returns {Promise<object|null>}
+     */
     async getUser(userId, userNickname) {
         if (!userId) {
             throw new Error('userId must be provided.');
@@ -48,6 +63,12 @@ export class DatabaseUtilities {
         return fetchedUser;
     }
 
+    /**
+     * Gets a user or creates one if not found.
+     * @param {string} userId 
+     * @param {string} userNickname 
+     * @returns {Promise<object>}
+     */
     async getOrAddUser(userId, userNickname) {
         if (!userId) {
             throw new Error('userId must be provided.');
@@ -69,6 +90,12 @@ export class DatabaseUtilities {
         return fetchedUser;
     }
 
+    /**
+     * Finds an open trade between two users.
+     * @param {string} userIdA 
+     * @param {string} userIdB 
+     * @returns {Promise<object|null>}
+     */
     async getOpenTradeForUsers(userIdA, userIdB) {
         const trades = this.getModel(this.models.Trade);
         return await trades.findOne({
