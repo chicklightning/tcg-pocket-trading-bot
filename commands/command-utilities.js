@@ -25,6 +25,8 @@ export const Sets = Object.freeze({
     'Triumphant Light': 'TL',
     'Shining Revelry': 'SR',
     'Celestial Guardians': 'CG',
+    'Extradimensional Crisis': 'EC',
+    'Eevee Grove': 'EG',
 });
 
 export const TargetUserOptionName = 'target';

@@ -44,6 +44,8 @@ export default (sequelize, DataTypes) => {
                 'Triumphant Light', 
                 'Shining Revelry',
                 'Celestial Guardians',
+                'Extradimensional Crisis',
+                'Eevee Grove',
               ]],
       },
     },
