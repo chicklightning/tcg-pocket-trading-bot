@@ -46,6 +46,7 @@ export default (sequelize, DataTypes) => {
                 'Celestial Guardians',
                 'Extradimensional Crisis',
                 'Eevee Grove',
+                'Wisdom of Sea and Sky'
               ]],
       },
     },

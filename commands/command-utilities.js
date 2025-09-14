@@ -27,6 +27,7 @@ export const Sets = Object.freeze({
     'Celestial Guardians': 'CG',
     'Extradimensional Crisis': 'EC',
     'Eevee Grove': 'EG',
+    'Wisdom of Sea and Sky': 'WSS',
 });
 
 export const TargetUserOptionName = 'target';

@@ -51,7 +51,7 @@ const command = {
 			const card = await cards.findByPk(cardId);
 
 			if (!card) {
-                descriptionString += `- Issue adding ${cardId}, no such card exists`;
+                descriptionString += `- Issue adding ${cardId}, no such card exists\n`;
                 return;
             }
 
