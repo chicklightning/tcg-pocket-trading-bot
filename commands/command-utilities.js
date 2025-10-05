@@ -28,6 +28,7 @@ export const Sets = Object.freeze({
     'Extradimensional Crisis': 'EC',
     'Eevee Grove': 'EG',
     'Wisdom of Sea and Sky': 'WSS',
+    'Secluded Springs': 'SS',
 });
 
 export const TargetUserOptionName = 'target';
